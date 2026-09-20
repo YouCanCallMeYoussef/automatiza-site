@@ -2,7 +2,19 @@
 <html lang="fr">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Automatiza</title>
+<title>Automatiza — automatisation de processus par agents IA</title>
+<meta name="description" content="Audit de vos process en 1 à 3 jours, cahier des charges chiffré, puis développement et suivi mensuel. Agents IA, documents, publicité, emails. Dubaï.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Automatiza">
+<meta property="og:title" content="Automatiza — automatisation de processus par agents IA">
+<meta property="og:description" content="On ne chiffre rien avant d'avoir fait l'audit. Un à trois jours, un cahier des charges, un devis. Puis un forfait mensuel qui se justifie tous les mois.">
+<!-- og:image reste a poser : il demande un fichier raster de 1200x630 qu-aucun
+     outil de ce depot ne produit aujourd-hui. Une balise og:image qui pointe
+     vers un fichier absent degrade l-apercu au lieu de l-ameliorer, donc elle
+     est absente plutot que fausse. Idem pour twitter:card, qui sans image ne
+     fait que repeter og:title. Voir HANDOFF §7.12. -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -33,6 +45,21 @@ html{scrollbar-width:thin;scrollbar-color:var(--ink) transparent}
 ::-webkit-scrollbar-thumb{background:var(--ink);border-radius:0}
 img{max-width:100%}
 
+/* Masquage visuel sans masquage vocal. Le titre de premier niveau de cette page
+   est le mot geant, mais celui-ci est aria-hidden : il change quatre fois au
+   defilement et n-est pas du texte a lire. Le <h1> porte donc la proposition
+   entiere, ici, et la hierarchie repart de 1 au lieu de commencer a <h2>. */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+    clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* Lien d-evitement. En fixed et non en absolute : le premier bloc de la page
+   est un heros epingle par ScrollTrigger, dont le conteneur devient un
+   referentiel de position — un absolute s-y serait pris au piege. */
+.skip{position:fixed;z-index:100;left:var(--s-md);top:-4rem;
+  background:var(--ink);color:var(--surface);padding:var(--s-sm) var(--s-md);
+  text-decoration:none;transition:top 120ms cubic-bezier(.2,0,0,1)}
+.skip:focus{top:var(--s-md)}
+
 /* ---------- appareil typographique ---------- */
 .display-palier{font-family:var(--display);font-weight:900;line-height:.86;letter-spacing:-.045em;
   font-variation-settings:'wght' 900,'wdth' 112;
@@ -41,10 +68,14 @@ img{max-width:100%}
   line-height:1.08;letter-spacing:-.03em;text-wrap:balance;margin:0}
 .headline-md{font-family:var(--display);font-weight:900;font-size:clamp(20px,2.6vw,25px);
   line-height:1.2;letter-spacing:-.02em;text-wrap:balance;margin:0}
-.accroche{font-size:15px;line-height:1.45;margin:0}
-.body-lg{font-size:clamp(17px,2.1vw,20px);line-height:1.55;margin:0}
-.body-md{font-size:16px;line-height:1.6;margin:0}
-.body-sm{font-size:14px;line-height:1.5;margin:0}
+/* text-wrap:pretty sur le corps de texte, balance sur les titres. Les deux
+   reglent le meme defaut — un mot seul sur la derniere ligne — mais pas au
+   meme prix : balance repartit toutes les lignes et ne convient qu-a des blocs
+   courts, pretty ne retouche que la fin et laisse la mesure tranquille. */
+.accroche{font-size:15px;line-height:1.45;margin:0;text-wrap:pretty}
+.body-lg{font-size:clamp(17px,2.1vw,20px);line-height:1.55;margin:0;text-wrap:pretty}
+.body-md{font-size:16px;line-height:1.6;margin:0;text-wrap:pretty}
+.body-sm{font-size:14px;line-height:1.5;margin:0;text-wrap:pretty}
 .label-action{font-family:var(--display);font-weight:900;font-size:13px;line-height:1;
   letter-spacing:.06em;text-transform:uppercase;font-variation-settings:'wght' 900,'wdth' 100}
 .label-caps{font-family:var(--mono);font-weight:500;font-size:12px;line-height:1.3;
@@ -89,6 +120,13 @@ footer .brand .wm{font-size:20px}
 .fiche-row{display:block}
 .fiche-row .v{display:block}
 .fiche-row .l{display:block;margin-top:var(--s-xs)}
+/* La ligne « Benefice vise » s-inverse et se degrade. Posee comme les deux
+   autres — valeur en spec-value au-dessus, etiquette en dessous — elle donnait
+   au chiffre le rang d-un resultat mesure : l-ordre de lecture rendait la
+   promesse que le « ≈ » essaie de retirer. Etiquette d-abord, chiffre au
+   corps de l-etiquette : il cesse de surclasser les deux faits au-dessus. */
+.fiche-row.obj .l{margin-top:0;margin-bottom:var(--s-xs)}
+.fiche-row.obj .v{text-transform:none;letter-spacing:0}
 .fiche-sep{border:0;height:1px;background:var(--ink);margin:var(--s-md) 0}
 /* A gauche et en bas, l'invite tombait dans le mot geant — exactement a p=0,
    la premiere image que voit le visiteur. Elle passe a droite, au-dessus du CTA,
@@ -134,6 +172,16 @@ ol.etapes li:last-child{padding-bottom:0}
 .svc .sol{margin-top:var(--s-md);max-width:var(--mesure)}
 .svc-more{color:var(--maigre);margin-top:var(--s-xl)}
 
+/* La FAQ. Pas d-accordeon : une question repliee est une objection qu-on cache,
+   et le systeme n-a aucun composant a volet. C-est une liste de definitions
+   posee dans la feuille, au meme rythme de filets que les services. */
+dl.faq{margin:0}
+dl.faq>div{padding-block:var(--s-lg);border-top:1px solid var(--border)}
+dl.faq>div:first-child{border-top:0;padding-top:0}
+dl.faq>div:last-child{padding-bottom:0}
+dl.faq dt{margin:0}
+dl.faq dd{margin:var(--s-sm) 0 0}
+
 
 form{max-width:34rem}
 .field{margin-bottom:var(--s-lg)}
@@ -144,12 +192,24 @@ form{max-width:34rem}
 .field textarea{resize:vertical;min-height:5.5rem}
 .field input:focus,.field textarea:focus,button:focus-visible,a:focus-visible{
   outline:2px solid var(--prusse);outline-offset:2px}
-.field.err input{border-color:var(--erreur)}
+/* #how recoit le focus par programme, via le lien d-evitement. Le saut de vue
+   EST l-indicateur ; un liseret de 2 px autour d-une section entiere ne dirait
+   rien de plus et suivrait le lecteur sur tout le reste du defilement. */
+#how:focus{outline:none}
+.field.err input,.field.err textarea{border-color:var(--erreur)}
 .field.err label{color:var(--erreur)}
 .field .msg{display:block;margin-top:var(--s-xs);color:var(--erreur)}
-.btn{border:0;border-radius:var(--r-none);padding:var(--s-md);cursor:pointer}
+.btn{border:0;border-radius:var(--r-none);padding:var(--s-md);cursor:pointer;
+  transition:background 120ms cubic-bezier(.2,0,0,1)}
 .btn-p{background:var(--prusse);color:var(--surface)}
+.btn-p:hover{background:var(--ink)}
 .btn-s{background:var(--neutral);color:var(--prusse)}
+.btn-s:hover{background:var(--border)}
+/* L-etat actif. Le survol dit « ceci repond », l-appui doit dire « c-est
+   parti » : sans lui, un clic sur ecran tactile ne renvoie rien du tout,
+   puisqu-il n-y a pas de survol la-bas. Un pixel, pas d-ombre portee. */
+.btn:active,.cta:active{transform:translateY(1px)}
+a:not(.brand):active{opacity:.7}
 
 .cta{position:fixed;z-index:50;right:clamp(12px,3vw,32px);
   bottom:calc(clamp(12px,3vh,32px) + env(safe-area-inset-bottom,0px));
@@ -160,11 +220,23 @@ form{max-width:34rem}
 footer{border-top:1px solid var(--border);color:var(--maigre)}
 footer .wrap{padding-block:var(--s-xl)}
 .foot-row{display:flex;gap:var(--s-lg) var(--s-xl);flex-wrap:wrap;justify-content:space-between}
+/* Les liens legaux. Ils etaient du texte brut separe par des points medians :
+   la page annoncait des mentions legales et n-y menait pas. Soulignes, parce
+   que dans un pied de page gris la couleur seule ne distingue plus rien. */
+.foot-nav{display:flex;gap:var(--s-md);flex-wrap:wrap}
+footer a{color:var(--maigre);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-thickness:1px;transition:color 120ms cubic-bezier(.2,0,0,1)}
+footer a:hover{color:var(--ink)}
+footer .brand:hover{color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<main>
+<a class="skip label-action" href="#how">Aller au contenu</a>
+
+<main id="main">
+  <h1 class="vh">Automatiza — automatisation de processus par agents IA pour les entreprises de Dubaï</h1>
+
   <!-- heros epingle : devoile par JS quand le mouvement est autorise -->
   <section id="hero" hidden aria-label="Ce qu'Automatiza automatise">
     <div class="stage">
@@ -188,7 +260,14 @@ footer .wrap{padding-block:var(--s-xl)}
   <!-- repli statique : quatre affiches empilees. Visible par defaut. -->
   <div id="posters"></div>
 
-  <section id="how">
+  <!-- Cible du lien d-evitement. Elle vise « how » et non « main », parce que
+       ce qui precede n-est pas une navigation a sauter mais un heros epingle de
+       3,4 hauteurs de fenetre, sans un seul element focalisable. Renvoyer le
+       clavier en haut de main, c-est le renvoyer devant ces 3,4 hauteurs.
+       tabindex=-1 pour que le focus s-y pose vraiment : sans lui, un ancrage
+       vers un conteneur non focalisable deplace la vue sans deplacer le focus,
+       et la tabulation suivante repart du debut du document. -->
+  <section id="how" tabindex="-1">
     <div class="wrap">
       <span class="eyebrow label-caps">Comment ça marche</span>
       <h2 class="headline-lg prose">On ne chiffre rien avant d'avoir fait l'audit.</h2>
@@ -272,6 +351,82 @@ footer .wrap{padding-block:var(--s-xl)}
     </div>
   </section>
 
+  <!-- La FAQ. La page demandait jusqu-ici un audit d-entreprise sans traiter une
+       seule objection : tout ce qui bloque une signature — le prix, la sortie,
+       les donnees, la propriete du code — restait hors de l-ecran. Les reponses
+       ne promettent rien que les etapes 01 a 05 ne tiennent deja. -->
+  <section id="faq">
+    <div class="wrap">
+      <span class="eyebrow label-caps">Questions</span>
+      <h2 class="headline-lg prose">Ce qu'on nous demande avant de signer.</h2>
+      <div class="sheet" style="margin-top:var(--s-xl)">
+        <dl class="faq">
+          <div>
+            <dt class="headline-md prose">Combien ça coûte ?</dt>
+            <dd class="body-md prose">On ne le sait pas avant l'audit, et personne ne devrait vous
+              l'annoncer avant. L'audit dure un à trois jours et produit un chiffrage écrit ; à partir
+              de là, le prix ne bouge plus sans avenant. Le forfait mensuel de suivi est une ligne
+              séparée, annoncée en même temps.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Et si l'audit conclut qu'il n'y a rien à automatiser ?</dt>
+            <dd class="body-md prose">Alors on vous le dit. Un process qui change tous les mois, qui
+              n'est décrit nulle part ou qui ne tourne que dix fois par an ne rentabilise pas une
+              automatisation. Vous repartez avec le cahier des charges — il vous sert de toute façon —
+              et rien ne vous engage à la suite.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Combien de temps avant que ça tourne ?</dt>
+            <dd class="body-md prose">Vous voyez tourner une première version bien avant la
+              livraison : c'est le point de l'étape 03. Un périmètre de trois semaines livre en trois
+              semaines. Un chantier de six mois livre par morceaux, process par process, pas en une
+              seule fois à la fin.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Faut-il changer nos outils ?</dt>
+            <dd class="body-md prose">Non. On se branche sur ce que vous avez : votre ERP, votre boîte
+              partagée, vos régies. Si un outil doit changer malgré tout, c'est écrit dans le cahier
+              des charges avec la raison et le coût, et la décision reste la vôtre.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Où vont nos données ?</dt>
+            <dd class="body-md prose">Le périmètre des données sort de l'audit et figure au cahier des
+              charges : ce qui quitte vos systèmes, vers quel fournisseur, pour combien de temps.
+              Quand un process ne peut rien laisser sortir, on le dit avant de le chiffrer plutôt
+              qu'après.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">À qui appartient ce qui est développé ?</dt>
+            <dd class="body-md prose">À vous. Le code, les instructions données aux agents, les
+              intégrations et la documentation vous sont remis à l'étape 04, et la formation existe
+              pour que vos équipes sachent les reprendre. Un système que personne ne sait reprendre
+              est un système que vous ne possédez pas.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Pourquoi un forfait mensuel ?</dt>
+            <dd class="body-md prose">Parce qu'un agent n'est pas un logiciel figé. Les modèles
+              changent, vos process aussi, et une intégration qui tenait en janvier casse en juin. Le
+              forfait couvre la supervision, les correctifs, une évolution mineure par mois et un
+              point de mesure. Il s'arrête quand vous le décidez.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Est-ce que ça remplace des postes ?</dt>
+            <dd class="body-md prose">Ce n'est pas ce qu'on vend. Les process qu'on automatise sont
+              ceux que personne ne revendique : la ressaisie, le tri, le rapprochement. Si votre
+              objectif est de supprimer des postes, dites-le dès l'audit — ni le périmètre ni le
+              chiffrage ne sont les mêmes.</dd>
+          </div>
+          <div>
+            <dt class="headline-md prose">Travaillez-vous en dehors de Dubaï ?</dt>
+            <dd class="body-md prose">Oui. L'audit se fait sur site quand c'est possible et à distance
+              sinon ; le suivi mensuel est à distance par défaut. Quand un déplacement est nécessaire,
+              il apparaît comme une ligne du devis, pas comme une surprise.</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
   <section id="contact">
     <div class="wrap">
       <span class="eyebrow label-caps">Demander un audit</span>
@@ -288,27 +443,36 @@ footer .wrap{padding-block:var(--s-xl)}
           <input id="f-sec" name="secteur" placeholder="Transport, distribution, services financiers…"></div>
         <div class="field"><label class="label-caps" for="f-bes">Besoin</label>
           <textarea id="f-bes" name="besoin" placeholder="Le process que vous refaites tous les jours."></textarea></div>
-        <div class="field" id="wrap-bud"><label class="label-caps" for="f-bud">Budget indicatif</label>
+        <div class="field"><label class="label-caps" for="f-bud">Budget indicatif</label>
           <input id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
         <div class="field"><label class="label-caps" for="f-ctc">Contact</label>
           <input id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
         <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
-        <p class="body-sm" id="formNote" style="margin-top:var(--s-md);color:var(--maigre)">
+        <p class="body-sm" id="formNote" role="status" aria-live="polite"
+           style="margin-top:var(--s-md);color:var(--maigre)">
           Prototype — le formulaire n'envoie rien.</p>
       </form>
     </div>
   </section>
 
-  <footer>
-    <div class="wrap">
-      <div class="brand" id="brandFoot"></div>
-      <div class="foot-row">
-        <p class="body-sm" style="margin:0">Automatiza — automatisation de processus par l'IA. Dubaï.</p>
-        <p class="body-sm" style="margin:0">Édité par <strong>FTL Company</strong> · Mentions légales · Confidentialité</p>
-      </div>
-    </div>
-  </footer>
+  <!-- Le pied de page etait DANS main. Il n-y a plus rien a y faire : main ne
+       contient que ce qui est propre au document, et un pied d-identification
+       de l-editeur ne l-est pas. -->
 </main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" id="brandFoot" href="#main" aria-label="Automatiza, retour en haut"></a>
+    <div class="foot-row">
+      <p class="body-sm" style="margin:0">Automatiza — automatisation de processus par l'IA. Dubaï.
+        Édité par <strong>FTL Company</strong>.</p>
+      <nav class="foot-nav body-sm" aria-label="Informations légales">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="confidentialite.html">Confidentialité</a>
+      </nav>
+    </div>
+  </div>
+</footer>
 
 <a class="cta label-action" href="#contact">Demander un audit</a>
 
@@ -324,19 +488,19 @@ footer .wrap{padding-block:var(--s-xl)}
 var PALIERS = [
   { cle:"agents", mot:"Agents IA", plate:"#49A7D2", wash:"#E1F0F9",
     accroche:"Vos commerciaux répondent en trois heures. Un agent répond en trois minutes, à toute heure, dans la langue du client.",
-    fiche:[["Qualification entrante","Ce qu'on automatise"],["Agents + RAG","Technologie"],["≈ 80 % des demandes qualifiées sans intervention","Bénéfice visé"]],
+    fiche:[["Qualification entrante","Ce qu'on automatise"],["Agents + RAG","Technologie"],["≈ 80 % des demandes qualifiées sans intervention","Bénéfice visé","obj"]],
     recto:{x:64,y:54,w:338,rot:-8}, blob:{x:2,y:41,w:42}, pilote:0 },
   { cle:"documents", mot:"Documents", plate:"#F1BB57", wash:"#FAEFDA",
     accroche:"Un devis, un bon de commande, une facture. Trois formats, trois saisies, et trois occasions de se tromper.",
-    fiche:[["Extraction et rapprochement","Ce qu'on automatise"],["Agents + OCR + ERP","Technologie"],["≈ 3 h par semaine et par gestionnaire","Bénéfice visé"]],
+    fiche:[["Extraction et rapprochement","Ce qu'on automatise"],["Agents + OCR + ERP","Technologie"],["≈ 3 h par semaine et par gestionnaire","Bénéfice visé","obj"]],
     recto:{x:30,y:46,w:290,rot:11}, blob:{x:43,y:45,w:38}, pilote:9 },
   { cle:"publicite", mot:"Publicité", plate:"#E86B49", wash:"#FEE8E1",
     accroche:"Vos campagnes tournent sur six canaux. Personne ne sait lequel rapporte. On branche la mesure avant d'ajouter du budget.",
-    fiche:[["Déclinaison et arbitrage","Ce qu'on automatise"],["Agents + API régies","Technologie"],["≈ 30 % de coût par lead en moins","Bénéfice visé"]],
+    fiche:[["Déclinaison et arbitrage","Ce qu'on automatise"],["Agents + API régies","Technologie"],["≈ 30 % de coût par lead en moins","Bénéfice visé","obj"]],
     recto:{x:69,y:44,w:354,rot:-13}, blob:{x:6,y:39,w:44}, pilote:17 },
   { cle:"emails", mot:"Emails", plate:"#6BBEA5", wash:"#E2F3ED",
     accroche:"Quatre cents messages par jour sur une boîte partagée. Le tri prend désormais plus de temps que les réponses.",
-    fiche:[["Tri, routage, brouillons","Ce qu'on automatise"],["Agents + boîte partagée","Technologie"],["≈ 90 % des messages routés sans intervention","Bénéfice visé"]],
+    fiche:[["Tri, routage, brouillons","Ce qu'on automatise"],["Agents + boîte partagée","Technologie"],["≈ 90 % des messages routés sans intervention","Bénéfice visé","obj"]],
     /* RECTO passe a droite ici. « Emails » est le plus court des quatre mots
        geants : il ne va pas au-dela du tiers gauche, donc le lavis doit occuper
        ce tiers-la pour que le mot le traverse — et le robot doit donc etre au
@@ -442,8 +606,12 @@ function tete(){
   '<path d="M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z" class="rFill" '+K+'/>'+
   /* bandeau de visiere — champ noir plein, pas d-yeux */
   '<path d="M-32,-82 L-21,-96 L21,-96 L32,-82 L32,-48 L21,-38 L-21,-38 L-32,-48 Z" fill="#1B1612"/>'+
-  /* le pilote : une seule marque, qui glisse de gauche a droite */
-  '<rect id="pilote" x="-6" y="-73" width="12" height="12" class="rFill"/>'+
+  /* le pilote : une seule marque, qui glisse de gauche a droite.
+     Repere par une CLASSE et non par un id : tete() est appelee trois fois par
+     document — le robot et les deux logotypes — et le meme id y apparaissait
+     donc trois fois. Le nettoyage a posteriori qui trainait plus bas ne
+     rattrapait que les affiches, pas les logotypes. */
+  '<rect class="pilote rFill" x="-6" y="-73" width="12" height="12"/>'+
   /* disque d-oreille — repere d-orientation, cote gauche uniquement */
   '<circle cx="-60" cy="-60" r="15" class="rFill" '+K+'/>'+
   '<circle cx="-60" cy="-60" r="6" fill="#1B1612"/>'+
@@ -611,12 +779,20 @@ function mixHex(a,b,t){
   if(dh<-Math.PI) dh+=TAU;
   return lchToHex(lerp(A[0],B[0],t), lerp(A[1],B[1],t), A[2]+dh*t);
 }
+/* Les lignes marquees "obj" s-inversent : l-etiquette passe au-dessus et le
+   chiffre descend au corps de l-etiquette. Les deux premieres lignes de la
+   fiche sont des faits — ce qu-on automatise, avec quoi — la troisieme est un
+   objectif. Presentees a l-identique, les trois se lisaient comme trois faits,
+   et le « ≈ » portait seul une distinction que la mise en page contredisait. */
 function ficheHTML(rows){
   var h="";
   for(var i=0;i<rows.length;i++){
     if(i) h+='<hr class="fiche-sep">';
-    h+='<div class="fiche-row"><span class="v spec-value">'+rows[i][0]+'</span>'+
-       '<span class="l spec-label">'+rows[i][1]+'</span></div>';
+    h += rows[i][2]==="obj"
+      ? '<div class="fiche-row obj"><span class="l spec-label">'+rows[i][1]+'</span>'+
+        '<span class="v spec-label">'+rows[i][0]+'</span></div>'
+      : '<div class="fiche-row"><span class="v spec-value">'+rows[i][0]+'</span>'+
+        '<span class="l spec-label">'+rows[i][1]+'</span></div>';
   }
   return h;
 }
@@ -656,16 +832,13 @@ var posters=document.getElementById("posters");
     for(var k=0;k<fills.length;k++) fills[k].setAttribute("fill",w);
     var ps=svg.querySelectorAll(".pose");
     for(var k2=0;k2<ps.length;k2++) ps[k2].style.opacity = (k2===pose?1:0);
-    svg.querySelector("#pilote").setAttribute("x", (-6 + (+boxes[j].getAttribute("data-pilote"))));
+    svg.querySelector(".pilote").setAttribute("x", (-6 + (+boxes[j].getAttribute("data-pilote"))));
   }
   var pbs=posters.querySelectorAll(".pbrand");
   for(var b=0;b<pbs.length;b++){
     var bf=pbs[b].querySelectorAll(".rFill"), bw=pbs[b].getAttribute("data-wash");
     for(var b2=0;b2<bf.length;b2++) bf[b2].setAttribute("fill",bw);
   }
-  /* un seul #pilote par document : on nettoie les id dupliques */
-  var dups=posters.querySelectorAll("#pilote");
-  for(var d=0;d<dups.length;d++) dups[d].removeAttribute("id");
 })();
 
 /* ============================================================
@@ -704,7 +877,7 @@ if(!reduce && hasGsap){
   var mots=motWrap.querySelectorAll(".w"), msets=marksEl.querySelectorAll(".mset");
   var asets=accrocheEl.querySelectorAll(".aset"), fsets=ficheEl.querySelectorAll(".fset");
   var poses=rectoEl.querySelectorAll(".pose"), rFills=rectoEl.querySelectorAll(".rFill");
-  var pilote=rectoEl.querySelector("#pilote");
+  var pilote=rectoEl.querySelector(".pilote");
 
   /* Sens de culbute alterne d'une transition a l'autre */
   var TUMBLE=[28,-32,26];
@@ -821,22 +994,80 @@ brandFoot.innerHTML=brandHTML();
 var ff=brandFoot.querySelectorAll(".rFill");
 for(var fi=0;fi<ff.length;fi++) ff[fi].setAttribute("fill","#F4F0E7");
 
-/* Le formulaire : l'erreur ne passe jamais par la couleur seule. */
+/* Le formulaire : l'erreur ne passe jamais par la couleur seule.
+   Un seul champ etait verifie — le budget. Les cinq autres passaient vides, y
+   compris « Contact », c-est-a-dire que le formulaire dont le titre promet
+   « nous vous rappelons » acceptait une demande sans aucun moyen de rappeler.
+   Quatre champs sont maintenant exiges, et « Contact » est en plus verifie de
+   format : le champ accepte un email OU un numero, donc ni type="email" ni un
+   pattern unique ne conviennent, et le controle se fait en deux essais. */
+var RE_MAIL=/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+var RE_TEL=/^\+?[\d][\d\s().–-]{7,}$/;
+var CHAMPS=[
+  { id:"f-nom", vide:"Indiquez un nom — c'est celui qu'on demandera en vous rappelant." },
+  { id:"f-bes", vide:"Décrivez le process en une phrase. Sans lui, l'audit n'a pas de point de départ." },
+  { id:"f-bud", vide:"Indiquez une plage, même approximative — c'est ce qui permet de chiffrer." },
+  { id:"f-ctc", vide:"Indiquez un email ou un numéro — sans quoi on ne peut pas vous rappeler.",
+    test:function(v){ return RE_MAIL.test(v)||RE_TEL.test(v); },
+    format:"Ce contact n'est ni un email ni un numéro de téléphone. Vérifiez la saisie." }
+];
 var form=document.getElementById("qualif");
+var note=document.getElementById("formNote");
+
+function poseErreur(champ){
+  var el=document.getElementById(champ.id), w=el.parentNode;
+  var old=w.querySelector(".msg"); if(old) w.removeChild(old);
+  w.classList.remove("err");
+  el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby");
+  var v=el.value.trim(), texte=null;
+  if(!v) texte=champ.vide;
+  else if(champ.test && !champ.test(v)) texte=champ.format;
+  if(!texte) return null;
+  w.classList.add("err");
+  var m=document.createElement("span");
+  m.className="msg body-sm"; m.id=champ.id+"-err";
+  m.textContent="✕ "+texte;
+  w.appendChild(m);
+  el.setAttribute("aria-invalid","true");
+  el.setAttribute("aria-describedby",m.id);
+  return el;
+}
+
 form.addEventListener("submit", function(e){
   e.preventDefault();
-  var bud=document.getElementById("f-bud"), wrap=document.getElementById("wrap-bud");
-  var old=wrap.querySelector(".msg"); if(old) old.parentNode.removeChild(old);
-  if(!bud.value.trim()){
-    wrap.classList.add("err");
-    var m=document.createElement("span");
-    m.className="msg body-sm";
-    m.textContent="✕ Indiquez une plage, même approximative — c'est ce qui permet de chiffrer.";
-    wrap.appendChild(m); bud.focus();
+  var premier=null;
+  for(var i=0;i<CHAMPS.length;i++){
+    var fautif=poseErreur(CHAMPS[i]);
+    if(fautif && !premier) premier=fautif;
+  }
+  if(premier){
+    /* Le compte va dans la note vocalisee : un lecteur d-ecran pose sur le
+       premier champ n-entend sinon qu-une erreur sur quatre. */
+    var n=form.querySelectorAll(".field.err").length;
+    note.textContent = n>1
+      ? "Prototype — "+n+" champs sont à corriger avant l'envoi."
+      : "Prototype — un champ est à corriger avant l'envoi.";
+    premier.focus();
     return;
   }
-  wrap.classList.remove("err");
-  document.getElementById("formNote").textContent="Prototype — rien n'a été envoyé, mais le formulaire est valide.";
+  note.textContent="Prototype — rien n'a été envoyé, mais le formulaire est valide.";
 });
+
+/* La correction efface l-erreur des qu-elle est faite, pas au prochain envoi :
+   laisser un champ en rouge apres l-avoir rempli, c-est mentir a l-appui. */
+for(var ci=0;ci<CHAMPS.length;ci++){
+  (function(champ){
+    document.getElementById(champ.id).addEventListener("blur", function(){
+      if(!document.getElementById(champ.id).parentNode.classList.contains("err")) return;
+      poseErreur(champ);
+      /* Quand la derniere erreur tombe, la note doit tomber avec elle : elle
+         annoncait encore « un champ est a corriger » devant un formulaire
+         entierement valide. Le test du texte courant garde l-annonce unique —
+         sans lui, chaque sortie de champ la revocaliserait. */
+      if(!form.querySelector(".field.err") && note.textContent.indexOf("corriger")>-1)
+        note.textContent="Prototype — le formulaire n'envoie rien.";
+    });
+  })(CHAMPS[ci]);
+}
 })();
 </script>

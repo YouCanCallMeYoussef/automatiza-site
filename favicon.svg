@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-81 -128 132 132">
+<!-- La tete de RECTO, sur la plaque « agents ». C'est le meme dessin que
+     logoMark() dans index.html, ampute du groupe .fine : a 16 px les traits de
+     2 px de la couture et des rivets se rejoignent et font une tache. Ce qui
+     reste — arceau, coque facettee, bandeau plein, disque d'oreille, pilote —
+     est exactement ce qui tient a cette taille. -->
+<rect x="-81" y="-128" width="132" height="132" fill="#49A7D2"/>
+<g stroke="#1B1612" stroke-width="5" stroke-linejoin="round">
+  <path d="M-74,-58 C-80,-96 -54,-120 -18,-116 L-16,-104 C-48,-108 -64,-88 -59,-58 Z" fill="#F4F0E7"/>
+  <path d="M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z" fill="#F4F0E7"/>
+  <circle cx="-60" cy="-60" r="15" fill="#F4F0E7"/>
+</g>
+<path d="M-32,-82 L-21,-96 L21,-96 L32,-82 L32,-48 L21,-38 L-21,-38 L-32,-48 Z" fill="#1B1612"/>
+<rect x="-6" y="-73" width="12" height="12" fill="#F4F0E7"/>
+<circle cx="-60" cy="-60" r="6" fill="#1B1612"/>
+<path d="M-30,-24 L30,-24 L23,-8 L-23,-8 Z" fill="#F4F0E7" stroke="#1B1612" stroke-width="5" stroke-linejoin="round"/>
+</svg>

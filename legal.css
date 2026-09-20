@@ -1,0 +1,65 @@
+/* Feuille des pages legales. Elles ne portent ni heros, ni plaque, ni RECTO :
+   ce sont des pages de texte, et le systeme y tient par la typographie seule.
+   Les jetons sont recopies de index.html plutot qu-importes — le prototype n-a
+   pas de feuille commune, et en inventer une pour deux pages de texte ferait
+   porter a index.html une requete de plus pour rien. */
+:root{
+  --surface:#F4F0E7; --neutral:#E9E1D2; --border:#D4CBBB;
+  --ink:#1B1612; --maigre:#6A635B; --prusse:#0E5071; --erreur:#8C2B1B;
+  --s-xs:4px; --s-sm:8px; --s-md:16px; --s-lg:24px; --s-xl:48px; --s-xxl:96px;
+  --mesure:36rem;
+  --display:Archivo,"Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scrollbar-width:thin;scrollbar-color:var(--ink) transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--ink);border-radius:0}
+body{margin:0;background:var(--surface);color:var(--ink);font-family:var(--display);
+     font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+.wrap{padding-inline:clamp(16px,3.4vw,48px);padding-block:var(--s-xxl);
+      max-width:1280px;margin:0 auto}
+.prose{max-width:var(--mesure)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(28px,4.4vw,40px);
+   line-height:1.08;letter-spacing:-.03em;text-wrap:balance;margin:0}
+h2{font-family:var(--display);font-weight:900;font-size:clamp(20px,2.6vw,25px);
+   line-height:1.2;letter-spacing:-.02em;text-wrap:balance;margin:var(--s-xl) 0 var(--s-sm)}
+p,li{text-wrap:pretty}
+p{margin:var(--s-sm) 0 0}
+ul{margin:var(--s-sm) 0 0;padding-left:var(--s-lg)}
+li{margin-top:var(--s-xs)}
+.eyebrow{display:block;color:var(--maigre);margin-bottom:var(--s-lg);
+  font-family:var(--mono);font-weight:500;font-size:12px;line-height:1.3;
+  letter-spacing:.07em;text-transform:uppercase}
+.maj{display:block;margin-top:var(--s-lg);color:var(--maigre);
+  font-family:var(--mono);font-weight:400;font-size:13px}
+.filet{border:0;height:1px;background:var(--border);margin:var(--s-xl) 0}
+
+/* Les trous. Ce sont des donnees d-etat civil d-entreprise : numero de registre,
+   adresse, hebergeur. Elles ne s-inventent pas, et une mention legale inventee
+   est pire que pas de mention legale du tout. Elles sont donc marquees, en
+   rouge et en capitales, pour qu-aucune ne parte en production sans etre vue. */
+.todo{display:inline-block;background:var(--erreur);color:var(--surface);
+  padding:0 var(--s-xs);font-family:var(--mono);font-weight:500;font-size:13px;
+  letter-spacing:.04em;text-transform:uppercase}
+
+a{color:var(--prusse);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-thickness:1px;transition:color 120ms cubic-bezier(.2,0,0,1)}
+a:hover{color:var(--ink)}
+a:active{opacity:.7}
+a:focus-visible{outline:2px solid var(--prusse);outline-offset:2px}
+
+.retour{display:inline-block;margin-bottom:var(--s-xl);
+  font-family:var(--display);font-weight:900;font-size:13px;line-height:1;
+  letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+.retour:hover{color:var(--prusse)}
+
+footer{border-top:1px solid var(--border);color:var(--maigre);font-size:14px}
+footer .wrap{padding-block:var(--s-xl)}
+footer a{color:var(--maigre)}
+footer a:hover{color:var(--ink)}
+.foot-nav{display:flex;gap:var(--s-md);flex-wrap:wrap;margin-top:var(--s-sm)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
