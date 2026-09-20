@@ -101,6 +101,31 @@ img{max-width:100%}
    retombaient en position statique et s'empilaient dans le coin haut gauche,
    par-dessus le logotype. */
 .marks svg{position:absolute;overflow:visible}
+/* Les marques hautes etaient posees en pourcentage du cadre, sans rien savoir
+   des deux colonnes de texte du bandeau. Selon la largeur ET la hauteur, la
+   mire tombait sur l'accroche et le faisceau sur la fiche : mesure, jusqu'a
+   52x16 px sur l'une et 30x22 px sur l'autre. Le texte ne bouge pas — c'est la
+   decoration qui cede. La bande libre est donc declaree ici dans les termes
+   memes du bandeau : marge, colonne de gauche plafonnee a 22rem, fiche de
+   200 px a droite. Chaque marque s'y pose a une fraction --f de la bande, et
+   --mw (qui doit valoir l'attribut width du svg) garantit que son bord droit
+   reste dedans quelle que soit la fraction. */
+.stage{--pad:clamp(16px,3.4vw,48px);
+  --bande-g:calc(var(--pad) + 22rem);
+  --bande-d:calc(100% - var(--pad) - 200px)}
+.marks svg.haut{left:calc(var(--bande-g) + (var(--bande-d) - var(--bande-g) - var(--mw)) * var(--f))}
+@media (max-width:760px){
+  /* la fiche disparait, la colonne de gauche passe a 70 % : la bande se
+     redessine sur ces deux faits plutot que de garder des bornes fausses */
+  .stage{--bande-g:max(calc(var(--pad) + 22rem),calc(var(--pad) + (100% - 2*var(--pad))*.70));
+    --bande-d:calc(100% - var(--pad))}
+}
+@media (max-width:540px){
+  /* Sous cette largeur la bande ne fait plus la largeur d'une marque : il n'y a
+     pas de place, et une marque sans place se pose sur le texte. Le format
+     telephone porte deux marques au lieu de trois. */
+  .marks svg.haut{display:none}
+}
 #recto{position:absolute;z-index:4;width:240px;will-change:left,top,width,transform}
 #recto svg{display:block;width:100%;height:auto;overflow:visible}
 .hud{z-index:5;padding:clamp(20px,4vh,44px) clamp(16px,3.4vw,48px);display:flex;
@@ -159,18 +184,48 @@ footer .brand .wm{font-size:20px}
 .sheet-head{display:flex;flex-wrap:wrap;gap:var(--s-lg) var(--s-xl);
   padding-bottom:var(--s-lg);border-bottom:1px solid var(--border);margin-bottom:var(--s-xl)}
 .sheet-head .f .l{display:block;color:var(--maigre);margin-bottom:var(--s-xs)}
-ol.etapes{list-style:none;margin:0;padding:0;position:relative}
-ol.etapes:before{content:"";position:absolute;left:13px;top:14px;bottom:14px;width:1px;background:var(--border)}
-ol.etapes li{position:relative;padding-left:var(--s-xl);padding-bottom:var(--s-xl)}
-ol.etapes li:last-child{padding-bottom:0}
-.dot{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:var(--r-full);
+/* Les cinq etapes en tuiles et non en liste filee. Une colonne de 900 px de
+   haut se lit ligne a ligne, du debut a la fin ou pas du tout ; posees cote a
+   cote, les etapes se comparent d'un coup d'oeil et la hauteur de la feuille
+   tombe de moitie. L'ordre reste porte par le <ol> et par les pastilles 01-05,
+   donc rien ne se perd a la lecture sequentielle. Le filet de liaison disparait
+   avec la colonne : il reliait un axe qui n'existe plus. */
+ol.etapes{list-style:none;margin:0;padding:0;display:grid;gap:var(--s-md)}
+ol.etapes li{background:var(--surface);padding:var(--s-lg)}
+.dot{width:28px;height:28px;border-radius:var(--r-full);margin-bottom:var(--s-md);
   background:var(--prusse);color:var(--surface);display:flex;align-items:center;justify-content:center}
+@media (min-width:620px) and (max-width:899px){
+  ol.etapes{grid-template-columns:repeat(2,1fr)}
+  ol.etapes li:nth-child(5){grid-column:span 2}
+}
+@media (min-width:900px){
+  /* 3 + 2 laisserait un trou dans la feuille : la quatrieme tuile prend la
+     place vacante, comme une imposition qui remplit le format. */
+  ol.etapes{grid-template-columns:repeat(3,1fr)}
+  ol.etapes li:nth-child(4){grid-column:span 2}
+}
 
-.svc{padding-block:var(--s-xl);border-top:1px solid var(--border)}
-.svc:first-of-type{border-top:0;padding-top:0}
+/* Les services en cartes. Empiles, les quatre problemes se lisaient comme une
+   seule coulee de texte separee par des filets ; en grille, chaque probleme est
+   un objet qu'on peut prendre ou laisser. */
+.svc-grid{display:grid;gap:var(--s-md);margin-top:var(--s-xl)}
+@media (min-width:860px){.svc-grid{grid-template-columns:1fr 1fr}}
+.svc{padding:var(--s-lg);border:1px solid var(--border);
+  transition:background 160ms cubic-bezier(.2,0,0,1)}
 .svc .pb{display:block;color:var(--maigre);margin-bottom:var(--s-sm)}
 .svc .sol{margin-top:var(--s-md);max-width:var(--mesure)}
 .svc-more{color:var(--maigre);margin-top:var(--s-xl)}
+/* La solution n'apparait qu'au survol — mais seulement la ou le survol existe.
+   Sur ecran tactile et au clavier il n'y en a pas, et une reponse commerciale
+   qu'on ne peut pas atteindre ne vaut rien : hors de cette requete, les quatre
+   solutions restent lisibles en permanence. La carte garde sa hauteur pleine,
+   texte masque compris ; sinon la grille se reorganiserait sous le curseur et
+   la carte voisine fuirait au moment ou on la vise. */
+@media (hover:hover) and (pointer:fine){
+  .svc .sol{opacity:0;transition:opacity 160ms cubic-bezier(.2,0,0,1)}
+  .svc:hover,.svc:focus-within{background:var(--neutral)}
+  .svc:hover .sol,.svc:focus-visible .sol,.svc:focus-within .sol{opacity:1}
+}
 
 /* La FAQ. Pas d-accordeon : une question repliee est une objection qu-on cache,
    et le systeme n-a aucun composant a volet. C-est une liste de definitions
@@ -190,7 +245,8 @@ form{max-width:34rem}
   border:1px solid var(--border);border-radius:var(--r-none);padding:var(--s-sm);
   font-family:var(--display);font-size:16px;line-height:1.6}
 .field textarea{resize:vertical;min-height:5.5rem}
-.field input:focus,.field textarea:focus,button:focus-visible,a:focus-visible{
+.field input:focus,.field textarea:focus,button:focus-visible,a:focus-visible,
+.svc:focus-visible{
   outline:2px solid var(--prusse);outline-offset:2px}
 /* #how recoit le focus par programme, via le lien d-evitement. Le saut de vue
    EST l-indicateur ; un liseret de 2 px autour d-une section entiere ne dirait
@@ -316,38 +372,41 @@ footer .brand:hover{color:var(--ink)}
     <div class="wrap">
       <span class="eyebrow label-caps">Services</span>
       <h2 class="headline-lg prose">Chaque automatisation part d'un problème qu'on vous a entendu décrire.</h2>
-      <div style="margin-top:var(--s-xl)">
-        <article class="svc">
+      <!-- tabindex sur la carte : la solution se decouvre au survol, et le
+           clavier n-a pas de survol. Sans point d-arret ici, quatre reponses
+           deviendraient invisibles pour qui navigue a la tabulation. -->
+      <div class="svc-grid">
+        <article class="svc" tabindex="0">
           <span class="pb spec-label">Le problème</span>
           <h3 class="headline-md prose">Une demande entrante attend trois heures avant qu'on la lise.</h3>
           <p class="sol body-md"><strong>Agents IA commerciaux.</strong> Un agent qualifie la demande,
             va chercher le contexte dans vos documents et vos historiques, et rédige la réponse. Vos
             commerciaux arbitrent au lieu de saisir.</p>
         </article>
-        <article class="svc">
+        <article class="svc" tabindex="0">
           <span class="pb spec-label">Le problème</span>
           <h3 class="headline-md prose">Le même chiffre est saisi trois fois, dans trois formats.</h3>
           <p class="sol body-md"><strong>Automatisation documentaire.</strong> Extraction, contrôle
             de cohérence et rapprochement entre devis, bons de commande et factures. Les écarts
             remontent, le reste passe sans intervention.</p>
         </article>
-        <article class="svc">
+        <article class="svc" tabindex="0">
           <span class="pb spec-label">Le problème</span>
           <h3 class="headline-md prose">Six canaux tournent, personne ne sait lequel rapporte.</h3>
           <p class="sol body-md"><strong>Automatisation publicitaire.</strong> Déclinaison des
             visuels et des accroches, remontée unifiée des coûts par canal, arbitrage de budget sur
             des chiffres plutôt que sur une intuition.</p>
         </article>
-        <article class="svc">
+        <article class="svc" tabindex="0">
           <span class="pb spec-label">Le problème</span>
           <h3 class="headline-md prose">Le tri d'une boîte partagée coûte plus cher que les réponses.</h3>
           <p class="sol body-md"><strong>Automatisation des emails.</strong> Tri, routage vers la
             bonne personne, brouillons prêts à relire. Rien n'est envoyé sans validation tant que vous
             ne l'avez pas demandé.</p>
         </article>
-        <p class="svc-more body-md prose">Cette liste n'est pas fermée. Un process répétitif, décrit
-          par écrit et mesurable, est un candidat — l'audit sert exactement à le vérifier.</p>
       </div>
+      <p class="svc-more body-md prose">Cette liste n'est pas fermée. Un process répétitif, décrit
+        par écrit et mesurable, est un candidat — l'audit sert exactement à le vérifier.</p>
     </div>
   </section>
 
@@ -547,8 +606,8 @@ function toPath(a){
 
 /* Marques d'atelier : deux a quatre par palier, toujours au trait, jamais en aplat. */
 var MARKS = [
-  '<svg style="left:41%;top:17%" width="44" height="44" viewBox="0 0 44 44"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="22" cy="22" r="13"/><path d="M22,0V44M0,22H44"/></g></svg>'+
-  '<svg style="left:22%;bottom:23%" width="56" height="22" viewBox="0 0 56 22"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,11H46M38,3l8,8-8,8"/></g></svg>'+
+  '<svg class="haut" style="--mw:44px;--f:.30;top:17%" width="44" height="44" viewBox="0 0 44 44"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="22" cy="22" r="13"/><path d="M22,0V44M0,22H44"/></g></svg>'+
+  '<svg style="left:22%;bottom:14%" width="56" height="22" viewBox="0 0 56 22"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,11H46M38,3l8,8-8,8"/></g></svg>'+
   /* bas de page a droite : en haut a droite cette marque tombait sur la fiche technique */
   '<svg style="right:6%;bottom:30%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,30V0H30"/></g></svg>',
 
@@ -557,7 +616,7 @@ var MARKS = [
      pictogramme de categorie, c'est-a-dire le registre du clipart — et la
      categorie est deja dite deux fois a l'ecran, par le mot geant et par
      l'accroche. Le pli, lui, est le geste d'atelier du document. */
-  '<svg style="left:63%;top:20%" width="30" height="62" viewBox="0 0 30 62"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M15,4V58" stroke-dasharray="8 7"/><path d="M7,2h16M7,60h16"/></g></svg>'+
+  '<svg class="haut" style="--mw:30px;--f:.62;top:20%" width="30" height="62" viewBox="0 0 30 62"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M15,4V58" stroke-dasharray="8 7"/><path d="M7,2h16M7,60h16"/></g></svg>'+
   '<svg style="left:18%;bottom:19%" width="66" height="14" viewBox="0 0 66 14"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,7h52"/><circle cx="60" cy="7" r="5"/></g></svg>'+
   '<svg style="right:13%;bottom:28%" width="34" height="34" viewBox="0 0 34 34"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M34,0H0V34"/></g></svg>',
 
@@ -566,7 +625,7 @@ var MARKS = [
      l'etincelle des pages d'IA, exactement le cliche que la marque evite. Le
      cercle exterieur et le vide central la rendent a l'atelier.
      Position : au-dessus du lavis, pas a gauche ou elle tombait sur l'accroche. */
-  '<svg style="left:46%;top:11%" width="52" height="52" viewBox="0 0 52 52"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="26" cy="26" r="24"/><path d="M2,26h18M32,26h18M26,2v18M26,32v18M9,9l13,13M30,30l13,13M43,9L30,22M22,30L9,43"/></g></svg>'+
+  '<svg class="haut" style="--mw:52px;--f:.45;top:11%" width="52" height="52" viewBox="0 0 52 52"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="26" cy="26" r="24"/><path d="M2,26h18M32,26h18M26,2v18M26,32v18M9,9l13,13M30,30l13,13M43,9L30,22M22,30L9,43"/></g></svg>'+
   '<svg style="left:35%;bottom:16%" width="70" height="30" viewBox="0 0 70 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M2,28C18,2 52,2 68,28"/></g></svg>'+
   /* meme raison : la fiche technique occupe tout le haut de la colonne droite */
   '<svg style="right:9%;bottom:34%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,0H30V30"/></g></svg>',
@@ -574,11 +633,11 @@ var MARKS = [
   /* Faisceau de routage, et non une enveloppe : un flux qui entre et repart
      vers trois destinations. C'est la fonction — trier et router — plutot que
      l'objet. Meme raison que le pli pour Documents. */
-  '<svg style="left:66%;top:22%" width="58" height="50" viewBox="0 0 58 50"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M2,25h18M20,25l24,-17M20,25h26M20,25l24,17"/><path d="M37,5l7,3-2,7M40,20l7,5-7,5M42,30l2,7-7,3"/></g></svg>'+
+  '<svg class="haut" style="--mw:58px;--f:.72;top:22%" width="58" height="50" viewBox="0 0 58 50"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M2,25h18M20,25l24,-17M20,25h26M20,25l24,17"/><path d="M37,5l7,3-2,7M40,20l7,5-7,5M42,30l2,7-7,3"/></g></svg>'+
   /* File d'attente qui se vide — jauge, pas pictogramme. Remplace une croix de
      reperage identique a celle du palier Agents IA : la repeter a l'identique
      d'un palier a l'autre affaiblissait les deux. */
-  '<svg style="left:15%;top:26%" width="46" height="36" viewBox="0 0 46 36"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M4,4v28M16,8v20M28,13v10M40,17v2"/></g></svg>'+
+  '<svg style="left:24%;bottom:8%" width="46" height="36" viewBox="0 0 46 36"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M4,4v28M16,8v20M28,13v10M40,17v2"/></g></svg>'+
   '<svg style="right:11%;bottom:20%" width="60" height="24" viewBox="0 0 60 24"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,4h30M0,12h44M0,20h20"/></g></svg>'
 ];
 
