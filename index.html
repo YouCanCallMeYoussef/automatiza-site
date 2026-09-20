@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Automatiza</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -16,6 +20,17 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--surface);color:var(--ink);font-family:var(--display);
      font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* La barre de defilement, en encre. Large et claire, elle posait une bande
+   blanche le long d'une plaque qui va au bord. Elle n'est pas supprimee pour
+   autant : le heros dure 3,4 hauteurs de fenetre et la page en fait huit mille
+   pixels — retirer le seul repere de position, c'est faire payer l'elegance au
+   lecteur. Elle est donc amincie et passee au noir de cle, fond transparent,
+   pour qu'elle appartienne au dessin au lieu de s'y poser. */
+html{scrollbar-width:thin;scrollbar-color:var(--ink) transparent}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--ink);border-radius:0}
 img{max-width:100%}
 
 /* ---------- appareil typographique ---------- */
@@ -50,7 +65,11 @@ img{max-width:100%}
 .mot .w{position:absolute;bottom:clamp(-8px,-1vh,0px);left:clamp(8px,2.4vw,36px);white-space:nowrap;
   color:var(--ink);will-change:opacity,transform}
 #marks{z-index:3}
-#marks svg{position:absolute;overflow:visible}
+/* Selecteur de CLASSE et non d'ID : les affiches du repli statique portent
+   id="pm0".."pm3", donc « #marks svg » ne les atteignait pas. Leurs marques
+   retombaient en position statique et s'empilaient dans le coin haut gauche,
+   par-dessus le logotype. */
+.marks svg{position:absolute;overflow:visible}
 #recto{position:absolute;z-index:4;width:240px;will-change:left,top,width,transform}
 #recto svg{display:block;width:100%;height:auto;overflow:visible}
 .hud{z-index:5;padding:clamp(20px,4vh,44px) clamp(16px,3.4vw,48px);display:flex;
@@ -71,12 +90,17 @@ footer .brand .wm{font-size:20px}
 .fiche-row .v{display:block}
 .fiche-row .l{display:block;margin-top:var(--s-xs)}
 .fiche-sep{border:0;height:1px;background:var(--ink);margin:var(--s-md) 0}
-#scrollHint{position:absolute;z-index:5;left:clamp(16px,3.4vw,48px);bottom:clamp(16px,2.5vh,28px);
+/* A gauche et en bas, l'invite tombait dans le mot geant — exactement a p=0,
+   la premiere image que voit le visiteur. Elle passe a droite, au-dessus du CTA,
+   la seule zone basse que ni le mot ni la fiche n'occupent. */
+#scrollHint{position:absolute;z-index:5;right:clamp(16px,3.4vw,48px);
+  bottom:calc(clamp(12px,3vh,32px) + 62px);
   color:var(--ink);opacity:.75;display:flex;align-items:center;gap:var(--s-sm)}
 @media (max-width:760px){
   #fiche{display:none}
   .hud-left{width:70%;max-width:none}
-  #recto{width:170px}
+  /* la largeur de RECTO est posee en JS (voir rectoScale) : une regle ici
+     serait ecrasee par le style inline et ne servirait qu'a tromper le lecteur */
 }
 
 /* ---------- repli statique ---------- */
@@ -148,7 +172,7 @@ footer .wrap{padding-block:var(--s-xl)}
         <path id="blobPath" fill="var(--wash-agents)" stroke="var(--ink)" stroke-width="3"
               vector-effect="non-scaling-stroke"></path></svg></div>
       <div class="layer mot" id="motWrap" aria-hidden="true"></div>
-      <div class="layer" id="marks" aria-hidden="true"></div>
+      <div class="layer marks" id="marks" aria-hidden="true"></div>
       <div id="recto" aria-hidden="true"></div>
       <div class="layer hud">
         <div class="hud-left">
@@ -301,28 +325,54 @@ var PALIERS = [
   { cle:"agents", mot:"Agents IA", plate:"#49A7D2", wash:"#E1F0F9",
     accroche:"Vos commerciaux répondent en trois heures. Un agent répond en trois minutes, à toute heure, dans la langue du client.",
     fiche:[["Qualification entrante","Ce qu'on automatise"],["Agents + RAG","Technologie"],["≈ 80 % des demandes qualifiées sans intervention","Bénéfice visé"]],
-    recto:{x:64,y:54,w:250,rot:-8}, blob:{x:14,y:16,w:42}, pilote:0 },
+    recto:{x:64,y:54,w:338,rot:-8}, blob:{x:2,y:41,w:42}, pilote:0 },
   { cle:"documents", mot:"Documents", plate:"#F1BB57", wash:"#FAEFDA",
     accroche:"Un devis, un bon de commande, une facture. Trois formats, trois saisies, et trois occasions de se tromper.",
     fiche:[["Extraction et rapprochement","Ce qu'on automatise"],["Agents + OCR + ERP","Technologie"],["≈ 3 h par semaine et par gestionnaire","Bénéfice visé"]],
-    recto:{x:30,y:46,w:215,rot:11}, blob:{x:56,y:10,w:38}, pilote:9 },
+    recto:{x:30,y:46,w:290,rot:11}, blob:{x:43,y:45,w:38}, pilote:9 },
   { cle:"publicite", mot:"Publicité", plate:"#E86B49", wash:"#FEE8E1",
     accroche:"Vos campagnes tournent sur six canaux. Personne ne sait lequel rapporte. On branche la mesure avant d'ajouter du budget.",
     fiche:[["Déclinaison et arbitrage","Ce qu'on automatise"],["Agents + API régies","Technologie"],["≈ 30 % de coût par lead en moins","Bénéfice visé"]],
-    recto:{x:69,y:44,w:262,rot:-13}, blob:{x:8,y:22,w:44}, pilote:17 },
+    recto:{x:69,y:44,w:354,rot:-13}, blob:{x:6,y:39,w:44}, pilote:17 },
   { cle:"emails", mot:"Emails", plate:"#6BBEA5", wash:"#E2F3ED",
     accroche:"Quatre cents messages par jour sur une boîte partagée. Le tri prend désormais plus de temps que les réponses.",
     fiche:[["Tri, routage, brouillons","Ce qu'on automatise"],["Agents + boîte partagée","Technologie"],["≈ 90 % des messages routés sans intervention","Bénéfice visé"]],
-    recto:{x:38,y:56,w:232,rot:6}, blob:{x:58,y:20,w:40}, pilote:-3 }
+    /* RECTO passe a droite ici. « Emails » est le plus court des quatre mots
+       geants : il ne va pas au-dela du tiers gauche, donc le lavis doit occuper
+       ce tiers-la pour que le mot le traverse — et le robot doit donc etre au
+       pole oppose, a droite. C'est la longueur du mot qui commande la place du
+       robot, pas l'inverse. */
+    recto:{x:63,y:64,w:313,rot:6}, blob:{x:2,y:39,w:40}, pilote:-3 }
 ];
 
 /* Quatre blobs, MEME nombre de points de controle : 1 moveto + 4 cubiques.
    Le morphing est une interpolation numerique directe, sans bibliotheque. */
+/* Les quatre lavis. SIX ancres par forme, pas quatre.
+   Les premieres versions en avaient quatre, posees aux points cardinaux a rayon
+   presque constant : au rendu ce sont des oeufs. Mesure, l'ecart a l'ellipse
+   parfaite etait de 4 a 6 % et le creux de 0 % — le systeme, lui, promet une
+   forme organique et interdit le cercle. Avec quatre segments cubiques on
+   n'obtient au mieux qu'un ovoide effile : il en faut six pour qu'une forme
+   porte a la fois un lobe et une baie.
+   La contrainte du systeme est que les quatre formes aient le MEME nombre de
+   points de controle — pas que ce nombre soit quatre. A six, le morphing reste
+   une interpolation numerique directe de 38 nombres, toujours sans bibliotheque :
+   `toPath` et la boucle d'interpolation sont deja generiques.
+   Construction : ancres en polaire autour de (200,180), rayon 96 a 194, tangentes
+   Catmull-Rom. Les tangentes restent colineaires a chaque ancre, donc la baie
+   d'un lavis est une courbe et jamais une pointe — une pointe ferait du papier
+   decoupe, pas de l'encre. Ecart a l'ellipse : 13 a 18 %. Creux : 1,7 a 6,3 %.
+   Ordre angulaire identique d'une forme a l'autre : c'est ce qui garde le
+   morphing lisible. Verifie : aucune forme intermediaire ne se recoupe. */
 var BLOBS = [
-  [120,28, 214,2,330,44,352,124, 374,204,330,286,238,308, 146,330,52,288,30,206, 8,124,46,54,120,28],
-  [150,18, 250,20,340,70,348,150, 356,230,300,300,214,312, 128,324,46,278,28,198, 10,118,50,16,150,18],
-  [104,44, 200,12,316,22,344,106, 372,190,344,292,250,314, 156,336,64,300,34,220, 4,140,20,74,104,44],
-  [140,34, 236,16,322,56,344,138, 366,220,318,296,226,316, 134,336,56,282,32,196, 8,110,44,52,140,34]
+  /* Agents IA — baie a gauche, lobe qui descend a droite */
+  [194,10, 252,10,253,100,293,148, 328,191,388,194,375,228, 360,268,288,320,227,321, 170,322,152,269,111,232, 69,195,17,198,35,150, 54,98,134,11,194,10],
+  /* Documents — masse pleine, lobe tire vers la droite */
+  [178,20, 235,24,267,112,311,156, 359,202,406,184,383,222, 358,264,287,301,211,321, 150,338,117,340,84,303, 43,257,26,209,49,139, 69,78,122,17,178,20],
+  /* Publicite — large et basse, baie en bas a droite */
+  [215,77, 287,79,361,77,377,113, 392,148,320,200,286,243, 248,294,271,313,219,318, 181,322,108,303,77,264, 46,225,24,136,49,102, 76,65,150,75,215,77],
+  /* Emails — goutte renversee, encoche sur le flanc gauche */
+  [157,23, 196,9,239,51,272,101, 299,144,321,217,311,261, 300,307,261,349,213,348, 151,347,78,297,48,256, 24,221,66,216,87,170, 109,124,121,37,157,23]
 ];
 function toPath(a){
   var d="M"+a[0]+","+a[1];
@@ -335,18 +385,36 @@ function toPath(a){
 var MARKS = [
   '<svg style="left:41%;top:17%" width="44" height="44" viewBox="0 0 44 44"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="22" cy="22" r="13"/><path d="M22,0V44M0,22H44"/></g></svg>'+
   '<svg style="left:22%;bottom:23%" width="56" height="22" viewBox="0 0 56 22"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,11H46M38,3l8,8-8,8"/></g></svg>'+
-  '<svg style="right:8%;top:24%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,30V0H30"/></g></svg>',
+  /* bas de page a droite : en haut a droite cette marque tombait sur la fiche technique */
+  '<svg style="right:6%;bottom:30%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,30V0H30"/></g></svg>',
 
-  '<svg style="left:63%;top:20%" width="40" height="52" viewBox="0 0 40 52"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M2,2h26l10,10v38H2Z M28,2v10h10"/></g></svg>'+
+  /* Trait de pliage, et non une feuille dessinee. Le systeme demande des
+     marques de reperage plutot que des illustrations : une icone de page est un
+     pictogramme de categorie, c'est-a-dire le registre du clipart — et la
+     categorie est deja dite deux fois a l'ecran, par le mot geant et par
+     l'accroche. Le pli, lui, est le geste d'atelier du document. */
+  '<svg style="left:63%;top:20%" width="30" height="62" viewBox="0 0 30 62"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M15,4V58" stroke-dasharray="8 7"/><path d="M7,2h16M7,60h16"/></g></svg>'+
   '<svg style="left:18%;bottom:19%" width="66" height="14" viewBox="0 0 66 14"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,7h52"/><circle cx="60" cy="7" r="5"/></g></svg>'+
   '<svg style="right:13%;bottom:28%" width="34" height="34" viewBox="0 0 34 34"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M34,0H0V34"/></g></svg>',
 
-  '<svg style="left:19%;top:19%" width="46" height="46" viewBox="0 0 46 46"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M23,2v42M2,23h42M8,8l30,30M38,8L8,38"/></g></svg>'+
+  /* Mire en etoile — la cible radiale que l'imprimeur pose pour controler la
+     resolution. L'asterisque a huit branches qui tenait ici se lisait comme
+     l'etincelle des pages d'IA, exactement le cliche que la marque evite. Le
+     cercle exterieur et le vide central la rendent a l'atelier.
+     Position : au-dessus du lavis, pas a gauche ou elle tombait sur l'accroche. */
+  '<svg style="left:46%;top:11%" width="52" height="52" viewBox="0 0 52 52"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="26" cy="26" r="24"/><path d="M2,26h18M32,26h18M26,2v18M26,32v18M9,9l13,13M30,30l13,13M43,9L30,22M22,30L9,43"/></g></svg>'+
   '<svg style="left:35%;bottom:16%" width="70" height="30" viewBox="0 0 70 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M2,28C18,2 52,2 68,28"/></g></svg>'+
-  '<svg style="right:7%;top:16%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,0H30V30"/></g></svg>',
+  /* meme raison : la fiche technique occupe tout le haut de la colonne droite */
+  '<svg style="right:9%;bottom:34%" width="30" height="30" viewBox="0 0 30 30"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,0H30V30"/></g></svg>',
 
-  '<svg style="left:66%;top:22%" width="48" height="36" viewBox="0 0 48 36"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M2,2h44v32H2Z M2,2l22,18L46,2"/></g></svg>'+
-  '<svg style="left:15%;top:26%" width="42" height="42" viewBox="0 0 42 42"><g fill="none" stroke="#1B1612" stroke-width="3"><circle cx="21" cy="21" r="12"/><path d="M21,0v42M0,21h42"/></g></svg>'+
+  /* Faisceau de routage, et non une enveloppe : un flux qui entre et repart
+     vers trois destinations. C'est la fonction — trier et router — plutot que
+     l'objet. Meme raison que le pli pour Documents. */
+  '<svg style="left:66%;top:22%" width="58" height="50" viewBox="0 0 58 50"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M2,25h18M20,25l24,-17M20,25h26M20,25l24,17"/><path d="M37,5l7,3-2,7M40,20l7,5-7,5M42,30l2,7-7,3"/></g></svg>'+
+  /* File d'attente qui se vide — jauge, pas pictogramme. Remplace une croix de
+     reperage identique a celle du palier Agents IA : la repeter a l'identique
+     d'un palier a l'autre affaiblissait les deux. */
+  '<svg style="left:15%;top:26%" width="46" height="36" viewBox="0 0 46 36"><g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round"><path d="M4,4v28M16,8v20M28,13v10M40,17v2"/></g></svg>'+
   '<svg style="right:11%;bottom:20%" width="60" height="24" viewBox="0 0 60 24"><g fill="none" stroke="#1B1612" stroke-width="3"><path d="M0,4h30M0,12h44M0,20h20"/></g></svg>'
 ];
 
@@ -363,8 +431,13 @@ var K='stroke="#1B1612" stroke-width="3" stroke-linejoin="round" vector-effect="
    souriants : la visiere est un champ noir ou glisse le pilote. */
 function tete(){
   return (
-  /* arceau de casque — l'arc du logotype */
-  '<path d="M-62,-74 C-66,-102 -52,-118 -32,-118" fill="none" '+K+' stroke-linecap="round"/>'+
+  /* Arceau de casque — une BANDE pleine, pas un fil.
+     Dessine en trait simple il se terminait en l'air au-dessus du casque et
+     lisait comme une antenne, exactement la signature de clipart que la
+     specification interdit. Referme en bande a deux valeurs, il redevient une
+     piece d'appareil. Son extremite passe SOUS la coque, dessinee juste apres. */
+  '<path d="M-74,-58 C-80,-96 -54,-120 -18,-116 L-16,-104 '+
+          'C-48,-108 -64,-88 -59,-58 Z" class="rFill" '+K+'/>'+
   /* coque facettee */
   '<path d="M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z" class="rFill" '+K+'/>'+
   /* bandeau de visiere — champ noir plein, pas d-yeux */
@@ -380,30 +453,41 @@ function tete(){
     '<path d="M-46,-62 L-40,-62" fill="none" '+K+' stroke-width="2"/>'+
     '<circle cx="-38" cy="-32" r="3" fill="#1B1612"/>'+
     '<circle cx="38" cy="-32" r="3" fill="#1B1612"/>'+
-    '<rect x="-36" y="-121" width="10" height="7" class="rFill" '+K+' stroke-width="2"/>'+
+    /* couture de coque, sur la coque et non au-dessus : le rectangle flottant
+       qui tenait ici se lisait comme la boule d-une antenne */
+    '<path d="M-18,-112 L-18,-100" fill="none" '+K+' stroke-width="2"/>'+
   '</g>');
 }
+/* Largeurs, de la plus large a la plus etroite : yoke 116, casque 92, torse 88,
+   base 64. C'est le yoke qui doit etre le point le plus large du personnage.
+   Quand le casque l-etait, la silhouette se lisait comme une quille : elle ne
+   faisait que retrecir du haut vers le bas et rien ne disait « epaules ». */
 var CHASSIS =
   /* base cylindrique segmentee, pas de jambes */
-  '<path d="M-30,108 L30,108 L27,128 L-27,128 Z" class="rFill" '+K+'/>'+
-  '<path d="M-27,128 L27,128 L24,148 L-24,148 Z" class="rFill" '+K+'/>'+
-  '<path d="M-24,148 L24,148 L31,170 L-31,170 Z" class="rFill" '+K+'/>'+
+  '<path d="M-32,108 L32,108 L29,128 L-29,128 Z" class="rFill" '+K+'/>'+
+  '<path d="M-29,128 L29,128 L26,148 L-26,148 Z" class="rFill" '+K+'/>'+
+  '<path d="M-26,148 L26,148 L34,170 L-34,170 Z" class="rFill" '+K+'/>'+
   /* torse */
-  '<path d="M-42,-8 L42,-8 L42,92 L30,108 L-30,108 L-42,92 Z" class="rFill" '+K+'/>'+
+  '<path d="M-44,-8 L44,-8 L44,92 L32,108 L-32,108 L-44,92 Z" class="rFill" '+K+'/>'+
   /* collerette facettee, reprise du logotype */
   '<path d="M-30,-24 L30,-24 L23,-8 L-23,-8 Z" class="rFill" '+K+'/>'+
-  /* epaulieres */
-  '<path d="M-42,-2 L-30,-2 L-30,22 L-42,15 Z" class="rFill" '+K+'/>'+
-  '<path d="M42,-2 L30,-2 L30,22 L42,15 Z" class="rFill" '+K+'/>'+
-  /* fente de poitrine */
-  '<rect x="-19" y="18" width="38" height="9" fill="#1B1612"/>'+
+  /* Yoke d-epaules — une piece unique posee SUR le torse et plus large que lui.
+     Les epaulieres d-avant etaient dessinees a l-interieur du contour du torse,
+     dans le meme aplat et sans arete : rien n-en etait visible. */
+  '<path d="M-58,4 L-48,-8 L48,-8 L58,4 L58,15 L48,23 L-48,23 L-58,15 Z" class="rFill" '+K+'/>'+
+  /* fente de poitrine, sous le yoke */
+  '<rect x="-19" y="34" width="38" height="9" fill="#1B1612"/>'+
   /* detail fin du torse et de la base */
   '<g class="fine">'+
-    '<path d="M15,30 L15,92" fill="none" '+K+' stroke-width="2"/>'+
-    '<rect x="-19" y="36" width="7" height="7" fill="#1B1612"/>'+
-    '<rect x="-8" y="36" width="7" height="7" fill="#1B1612"/>'+
-    '<path d="M-15,135 h30 M-15,142 h30" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-21,117 h42" fill="none" '+K+' stroke-width="2"/>'+
+    /* Les deux temoins restent du MEME cote et la couture est verticale, a
+       droite. Temoins symetriques sous la fente, plus un filet horizontal, et
+       le torse se lisait comme un visage triste : fente=yeux, temoins=nez,
+       filet=bouche. La dissymetrie est ce qui le rend a nouveau instrument. */
+    '<rect x="-19" y="52" width="7" height="7" fill="#1B1612"/>'+
+    '<rect x="-8" y="52" width="7" height="7" fill="#1B1612"/>'+
+    '<path d="M22,50 L22,92" fill="none" '+K+' stroke-width="2"/>'+
+    '<path d="M-16,135 h32 M-16,142 h32" fill="none" '+K+' stroke-width="2"/>'+
+    '<path d="M-23,117 h46" fill="none" '+K+' stroke-width="2"/>'+
   '</g>'+
   tete();
 
@@ -423,24 +507,32 @@ function bras(sx,sy,ex,ey,hx,hy,hook){
      '" fill="none" stroke="#1B1612" stroke-width="7" stroke-linecap="butt" vector-effect="non-scaling-stroke"/></g>';
   return g;
 }
+/* Le bras au repos, commun aux paliers 1 et 2. Il descend le long du torse a
+   une dizaine d-unites du bord, et son crochet rentre vers le corps. Ecarte du
+   chassis et le crochet tourne vers l-exterieur, il se lisait comme un cable
+   arrache plutot que comme un bras au repos. */
+var BRAS_REPOS = bras(-58,12,-58,54,-50,96,"M-50,96 q11,7 9,22");
+
 var POSES = [
   /* 0 — Agents IA : les deux bras tendus vers l'avant, crochets ouverts vers l'exterieur */
-  bras(-42,8,-88,26,-126,8,"M-126,8 q-16,-2 -18,-18") +
-  bras(42,8,88,26,126,8,"M126,8 q16,-2 18,-18"),
-  /* 1 — Documents : un bras leve tenant un feuillet, l'autre au repos le long du chassis */
-  bras(-42,14,-56,56,-52,100,"M-52,100 q-14,4 -14,20") +
-  bras(42,8,86,-26,80,-78,"M80,-78 q4,-14 20,-14") +
+  bras(-58,10,-102,22,-146,10,"M-146,10 q-16,-3 -17,-19") +
+  bras(58,10,102,22,146,10,"M146,10 q16,-3 17,-19"),
+  /* 1 — Documents : un bras leve tenant un feuillet, l'autre au repos le long du chassis.
+     Le feuillet est pose AVANT le bras : le crochet passe ainsi par-dessus son
+     bord et la prise se lit, au lieu d-un feuillet qui flotte au bout d-un trait. */
+  BRAS_REPOS +
   '<g fill="none" stroke="#1B1612" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke">'+
-  '<path d="M62,-162 h56 v74 h-56 Z M72,-144 h36 M72,-128 h36 M72,-112 h22"/></g>',
+  '<path d="M70,-168 h56 v78 h-56 Z M80,-150 h36 M80,-134 h36 M80,-118 h22"/></g>' +
+  bras(58,9,96,-26,88,-78,"M88,-78 q4,-14 20,-14"),
   /* 2 — Publicite : un bras haut et tres ouvert, trois arcs monoline partant de la main */
-  bras(-42,14,-58,58,-50,102,"M-50,102 q-14,6 -12,22") +
-  bras(42,4,98,-42,134,-104,"M134,-104 q2,-16 18,-18") +
+  BRAS_REPOS +
+  bras(58,5,108,-40,144,-100,"M144,-100 q2,-16 18,-18") +
   '<g fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke">'+
-  '<path d="M148,-130 a30,30 0 0 1 8,30"/><path d="M158,-148 a52,52 0 0 1 14,50"/>'+
-  '<path d="M168,-166 a74,74 0 0 1 20,70"/></g>',
+  '<path d="M156,-126 a30,30 0 0 1 8,30"/><path d="M166,-144 a52,52 0 0 1 14,50"/>'+
+  '<path d="M174,-162 a74,74 0 0 1 20,70"/></g>',
   /* 3 — Emails : les deux bras bas et rentres en entonnoir, crochets tournes vers l'interieur */
-  bras(-42,14,-84,68,-36,114,"M-36,114 q16,4 16,20") +
-  bras(42,14,84,68,36,114,"M36,114 q-16,4 -16,20")
+  bras(-58,15,-96,68,-40,112,"M-40,112 q16,4 16,20") +
+  bras(58,15,96,68,40,112,"M40,112 q-16,4 -16,20")
 ];
 /* Le logotype : la tete de RECTO seule, plus le mot en Archivo 900.
    Le mot d-origine etait dans une grotesque geometrique arrondie ; il est
@@ -462,17 +554,62 @@ function rectoSVG(){
 /* ============================================================
    OUTILS
    ============================================================ */
+/* Le `w` de PALIERS est une taille de reference, pour grand ecran. En dessous
+   de 760px elle est reduite ici, en JS — et non en CSS : la regle
+   `@media(max-width:760px){#recto{width:170px}}` qui tenait ce role etait morte,
+   parce que le JS pose une largeur *inline* et qu'une declaration inline
+   l'emporte toujours sur une feuille de style. RECTO etait donc rendu a sa
+   taille de grand ecran sur telephone. */
+function rectoScale(){ return window.innerWidth<760 ? 0.56 : 1; }
 function lerp(a,b,t){return a+(b-a)*t;}
 function smooth(t){return t*t*(3-2*t);}
 function clamp01(t){return t<0?0:t>1?1:t;}
 function hex(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
-function mixHex(a,b,t){
-  var A=hex(a),B=hex(b),o="#";
-  for(var i=0;i<3;i++){
-    var v=Math.round(lerp(A[i],B[i],t)).toString(16);
-    o+=v.length<2?"0"+v:v;
-  }
+
+/* ---------- melange d'encres en OKLCH ----------
+   Deux plaques melangees composante par composante en sRGB passent par le gris :
+   le bleu et le jaune sont opposes, leur milieu arithmetique est une vase
+   verdatre (#9DB194 pour ceruleum -> jaune de Naples). Une plaque desaturee en
+   milieu de transition contredit la regle du systeme : le heros est une plaque
+   d'encre pleine, a tout instant.
+   Le systeme construit deja ses rampes en OKLCH. On melange donc en polaire :
+   L et C lineairement, la teinte par le plus court arc. Le bleu passe alors au
+   jaune par le turquoise et le vert — des encres, pas des gris. */
+function srgbToLin(c){c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);}
+function linToSrgb(c){var v=c<=0.0031308?c*12.92:1.055*Math.pow(c,1/2.4)-0.055;
+  return Math.round(Math.max(0,Math.min(1,v))*255);}
+function rgbToLch(rgb){
+  var r=srgbToLin(rgb[0]),g=srgbToLin(rgb[1]),b=srgbToLin(rgb[2]);
+  var l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b);
+  var m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b);
+  var s=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+  var L=0.2104542553*l+0.7936177850*m-0.0040720468*s;
+  var A=1.9779984951*l-2.4285922050*m+0.4505937099*s;
+  var B=0.0259040371*l+0.7827717662*m-0.8086757660*s;
+  return [L,Math.sqrt(A*A+B*B),Math.atan2(B,A)];
+}
+function lchToHex(L,C,h){
+  var A=C*Math.cos(h),B=C*Math.sin(h);
+  var l=L+0.3963377774*A+0.2158037573*B;
+  var m=L-0.1055613458*A-0.0638541728*B;
+  var s=L-0.0894841775*A-1.2914855480*B;
+  l=l*l*l; m=m*m*m; s=s*s*s;
+  var v=[linToSrgb( 4.0767416621*l-3.3077115913*m+0.2309699292*s),
+         linToSrgb(-1.2684380046*l+2.6097574011*m-0.3413193965*s),
+         linToSrgb(-0.0041960863*l-0.7034186147*m+1.7076147010*s)];
+  var o="#";
+  for(var i=0;i<3;i++){var x=v[i].toString(16); o+=x.length<2?"0"+x:x;}
   return o;
+}
+var TAU=Math.PI*2;
+function mixHex(a,b,t){
+  if(t<=0) return a;
+  if(t>=1) return b;
+  var A=rgbToLch(hex(a)), B=rgbToLch(hex(b));
+  var dh=B[2]-A[2];                       /* plus court arc de teinte */
+  if(dh> Math.PI) dh-=TAU;
+  if(dh<-Math.PI) dh+=TAU;
+  return lchToHex(lerp(A[0],B[0],t), lerp(A[1],B[1],t), A[2]+dh*t);
 }
 function ficheHTML(rows){
   var h="";
@@ -499,8 +636,8 @@ var posters=document.getElementById("posters");
          '<div class="layer" style="z-index:1"><svg style="position:absolute;left:'+p.blob.x+'%;top:'+p.blob.y+'%;width:'+p.blob.w+'%" viewBox="0 0 400 360" aria-hidden="true">'+
            '<path d="'+toPath(BLOBS[i])+'" fill="'+p.wash+'" stroke="#1B1612" stroke-width="3" vector-effect="non-scaling-stroke"/></svg></div>'+
          '<div class="layer mot" style="z-index:2" aria-hidden="true"><span class="w display-palier">'+p.mot+'</span></div>'+
-         '<div class="layer" id="pm'+i+'" style="z-index:3" aria-hidden="true">'+MARKS[i]+'</div>'+
-         '<div class="p-recto" style="position:absolute;z-index:4;left:'+p.recto.x+'%;top:'+p.recto.y+'%;width:'+p.recto.w+'px;'+
+         '<div class="layer marks" id="pm'+i+'" style="z-index:3" aria-hidden="true">'+MARKS[i]+'</div>'+
+         '<div class="p-recto" style="position:absolute;z-index:4;left:'+p.recto.x+'%;top:'+p.recto.y+'%;width:'+(p.recto.w*rectoScale())+'px;'+
            'transform:translate(-50%,-50%) rotate('+p.recto.rot+'deg)" data-pose="'+i+'" data-wash="'+p.wash+'" data-pilote="'+p.pilote+'"></div>'+
          '<div class="layer hud" style="z-index:5">'+
            '<div class="hud-left"><div class="brand pbrand" data-wash="'+p.wash+'">'+brandHTML()+'</div>'+
@@ -590,16 +727,48 @@ if(!reduce && hasGsap){
     blobPath.setAttribute("d",toPath(bp));
     var wash = mixHex(A.wash,B.wash,f);
     blobPath.setAttribute("fill",wash);
-    blob.style.left = lerp(A.blob.x,B.blob.x,f)+"%";
-    blob.style.top  = lerp(A.blob.y,B.blob.y,f)+"%";
-    blob.style.width= lerp(A.blob.w,B.blob.w,f)+"%";
+    /* Le lavis se contracte pendant qu'il traverse.
+       Les positions font permuter le robot et le blob a chaque palier — le blob
+       occupe la zone que le robot vient de quitter — donc les deux se croisent
+       necessairement a mi-course. Or ils portent au meme instant exactement le
+       meme lavis, et le robot passe au-dessus : superposes, il s'y dissout et ne
+       subsiste qu'en fil de fer, ce que le systeme interdit.
+       Les separer verticalement est impossible (le lavis fait pres de 500px de
+       haut pour 900 de fenetre). Il se retire donc sur la meme enveloppe que la
+       culbute, puis reprend sa taille : de l'encre qui se resserre pendant que la
+       plaque change, et un robot qui reste entier. */
+    /* Le lavis se retire de 66 % pendant qu'il traverse le robot, puis revient.
+       Les positions font permuter le robot et le lavis a chaque palier — le
+       lavis occupe la zone que le robot vient de quitter — donc les deux se
+       croisent necessairement a mi-course. Or ils portent au meme instant
+       exactement le meme lavis, et le robot passe au-dessus : superposes, il s'y
+       dissout et ne subsiste qu'en fil de fer, ce que le systeme interdit.
+       Le point d'ancrage compte autant que le taux : voir les deux notes
+       ci-dessous. Mesure a 1440x900 : zero chevauchement sur 145 points,
+       ecart minimal +17px, et le mot traverse toujours les quatre lavis. */
+    var env = Math.sin(Math.PI*f);
+    var s = 1 - 0.66*env;
+    var wPct = lerp(A.blob.w,B.blob.w,f), yPct = lerp(A.blob.y,B.blob.y,f);
+    /* La contraction est ancree EN BAS. Reduire la largeur a `top` constant
+       ferait remonter le bord inferieur du lavis — c'est-a-dire le ferait entrer
+       dans la bande ou passe le robot. En compensant `top`, le lavis se retire
+       vers le mot geant qu'il traverse, et non vers le personnage qu'il doit
+       eviter. */
+    var svgHpct = (wPct/100*hero.clientWidth*0.9) / hero.clientHeight * 100;
+    /* ...et centree horizontalement. A `left` constant, seul le bord droit se
+       retire : quand le robot arrive par la gauche, le bord qui le croise ne
+       bouge pas et la contraction ne sert a rien. Le lavis se retire donc vers
+       son bas-centre — vers le mot, et loin du robot quel que soit son cote. */
+    blob.style.left = (lerp(A.blob.x,B.blob.x,f) + wPct*(1-s)/2)+"%";
+    blob.style.top  = (yPct + svgHpct*(1-s))+"%";
+    blob.style.width= (wPct*s)+"%";
 
     /* La culbute culmine a mi-transition : c'est la, silhouette la plus ambigue,
        que la pose s'echange. Au repos on ne depasse jamais 14 degres. */
     var tumble = TUMBLE[i]*Math.sin(Math.PI*f);
     rectoEl.style.left = lerp(A.recto.x,B.recto.x,f)+"%";
     rectoEl.style.top  = lerp(A.recto.y,B.recto.y,f)+"%";
-    rectoEl.style.width= lerp(A.recto.w,B.recto.w,f)+"px";
+    rectoEl.style.width= (lerp(A.recto.w,B.recto.w,f)*rectoScale())+"px";
     rectoEl.style.transform = "translate(-50%,-50%) rotate("+(lerp(A.recto.rot,B.recto.rot,f)+tumble)+"deg)";
     for(var q=0;q<rFills.length;q++) rFills[q].setAttribute("fill",wash);
     /* le logotype prend l-encre du palier, comme le robot qu-il represente */
@@ -608,13 +777,24 @@ if(!reduce && hasGsap){
 
     /* Fenetre d'echange, calee sur le pic de culbute */
     var sw = smooth(clamp01((f-0.38)/0.24));
+    /* Le texte bascule, il ne se fond pas. Un cross-fade symetrique laisse, a
+       mi-course, deux paragraphes a 50 % l'un sur l'autre : sur un heros scrubbe
+       le lecteur s'y arrete et ne lit que de la bouillie. Le sortant est donc
+       eteint avant que l'entrant ne s'allume. Les poses, elles, se fondent
+       vraiment — c'est la distinction que fait le systeme entre le cross-fade
+       des poses et la bascule du contenu. */
+    var outT = clamp01(1-sw*2), inT = clamp01(sw*2-1);
     for(var n=0;n<PALIERS.length;n++){
       var o = n===i ? 1-sw : (n===i+1 ? sw : 0);
-      mots[n].style.opacity=o;
-      mots[n].style.transform="translateY("+((1-o)*14)+"px)";
+      var ot = n===i ? outT : (n===i+1 ? inT : 0);
+      mots[n].style.opacity=ot;
+      mots[n].style.transform="translateY("+((1-ot)*14)+"px)";
       msets[n].style.opacity=o;
-      asets[n].style.opacity=o;
-      fsets[n].style.opacity=o;
+      asets[n].style.opacity=ot;
+      fsets[n].style.opacity=ot;
+      /* les bras s-echangent sur la meme fenetre que le reste : sans ca les
+         quatre poses se superposent et RECTO devient un buisson de bras */
+      poses[n].style.opacity=o;
     }
     hint.style.opacity = (1-clamp01(p*8))*0.75;
   }
