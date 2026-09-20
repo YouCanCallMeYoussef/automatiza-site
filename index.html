@@ -10,11 +10,20 @@
 <meta property="og:site_name" content="Automatiza">
 <meta property="og:title" content="Automatiza — automatisation de processus par agents IA">
 <meta property="og:description" content="On ne chiffre rien avant d'avoir fait l'audit. Un à trois jours, un cahier des charges, un devis. Puis un forfait mensuel qui se justifie tous les mois.">
-<!-- og:image reste a poser : il demande un fichier raster de 1200x630 qu-aucun
-     outil de ce depot ne produit aujourd-hui. Une balise og:image qui pointe
-     vers un fichier absent degrade l-apercu au lieu de l-ameliorer, donc elle
-     est absente plutot que fausse. Idem pour twitter:card, qui sans image ne
-     fait que repeter og:title. Voir HANDOFF §7.12. -->
+<!-- La vignette n-est pas une composition separee : c-est la premiere image du
+     site, le heros au palier « Agents IA », rendu a 1200x630 par
+     tools/og-card.html (voir HANDOFF §8). Rien n-y est redessine, donc rien ne
+     peut y vieillir a part : le jour ou RECTO, une plaque ou une accroche
+     change, on relance la commande et la vignette suit.
+     ⚠ A LA MISE EN LIGNE : og:image doit devenir une URL ABSOLUE. LinkedIn et
+     Facebook n-acceptent pas le chemin relatif — l-apercu retomberait sur une
+     carte de texte nu sans que rien ne le signale. -->
+<meta property="og:image" content="og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Plaque bleue « Agents IA » : le logotype Automatiza, la fiche technique du palier et RECTO, le robot dessiné au trait.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
