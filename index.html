@@ -184,26 +184,17 @@ footer .brand .wm{font-size:20px}
 .sheet-head{display:flex;flex-wrap:wrap;gap:var(--s-lg) var(--s-xl);
   padding-bottom:var(--s-lg);border-bottom:1px solid var(--border);margin-bottom:var(--s-xl)}
 .sheet-head .f .l{display:block;color:var(--maigre);margin-bottom:var(--s-xs)}
-/* Les cinq etapes en tuiles et non en liste filee. Une colonne de 900 px de
-   haut se lit ligne a ligne, du debut a la fin ou pas du tout ; posees cote a
-   cote, les etapes se comparent d'un coup d'oeil et la hauteur de la feuille
-   tombe de moitie. L'ordre reste porte par le <ol> et par les pastilles 01-05,
-   donc rien ne se perd a la lecture sequentielle. Le filet de liaison disparait
-   avec la colonne : il reliait un axe qui n'existe plus. */
-ol.etapes{list-style:none;margin:0;padding:0;display:grid;gap:var(--s-md)}
-ol.etapes li{background:var(--surface);padding:var(--s-lg)}
-.dot{width:28px;height:28px;border-radius:var(--r-full);margin-bottom:var(--s-md);
+/* Les cinq etapes restent une colonne filee, et c'est un choix : un parcours
+   se lit dans l'ordre. Le filet vertical est l'axe du temps, les pastilles en
+   sont les reperes ; mis cote a cote en tuiles, les cinq moments deviennent
+   cinq options au meme rang, ce qu'ils ne sont pas. Ce sont les questions de
+   la FAQ qui se comparent, pas les etapes qui se suivent. */
+ol.etapes{list-style:none;margin:0;padding:0;position:relative}
+ol.etapes:before{content:"";position:absolute;left:13px;top:14px;bottom:14px;width:1px;background:var(--border)}
+ol.etapes li{position:relative;padding-left:var(--s-xl);padding-bottom:var(--s-xl)}
+ol.etapes li:last-child{padding-bottom:0}
+.dot{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:var(--r-full);
   background:var(--prusse);color:var(--surface);display:flex;align-items:center;justify-content:center}
-@media (min-width:620px) and (max-width:899px){
-  ol.etapes{grid-template-columns:repeat(2,1fr)}
-  ol.etapes li:nth-child(5){grid-column:span 2}
-}
-@media (min-width:900px){
-  /* 3 + 2 laisserait un trou dans la feuille : la quatrieme tuile prend la
-     place vacante, comme une imposition qui remplit le format. */
-  ol.etapes{grid-template-columns:repeat(3,1fr)}
-  ol.etapes li:nth-child(4){grid-column:span 2}
-}
 
 /* Les services en cartes. Empiles, les quatre problemes se lisaient comme une
    seule coulee de texte separee par des filets ; en grille, chaque probleme est
@@ -230,12 +221,25 @@ ol.etapes li{background:var(--surface);padding:var(--s-lg)}
 /* La FAQ. Pas d-accordeon : une question repliee est une objection qu-on cache,
    et le systeme n-a aucun composant a volet. C-est une liste de definitions
    posee dans la feuille, au meme rythme de filets que les services. */
-dl.faq{margin:0}
-dl.faq>div{padding-block:var(--s-lg);border-top:1px solid var(--border)}
-dl.faq>div:first-child{border-top:0;padding-top:0}
-dl.faq>div:last-child{padding-bottom:0}
+/* Neuf questions empilees faisaient une colonne de 1 583 px : celui qui
+   cherche « combien ca coute » la parcourait en entier sans savoir si sa
+   question y etait. Posees en panneaux, les neuf objections se balaient d'un
+   coup d'oeil et chacune se prend isolement — c'est le seul endroit de la page
+   ou le lecteur cherche, au lieu de lire. Les filets disparaissent avec la
+   colonne : ce qui separe desormais, c'est la gouttiere. Toujours pas
+   d'accordeon — la reponse est dans le panneau, sous la question. */
+dl.faq{margin:0;display:grid;gap:var(--s-md)}
+dl.faq>div{background:var(--surface);padding:var(--s-lg)}
 dl.faq dt{margin:0}
 dl.faq dd{margin:var(--s-sm) 0 0}
+@media (min-width:640px) and (max-width:1039px){
+  dl.faq{grid-template-columns:repeat(2,1fr)}
+  dl.faq>div:last-child{grid-column:span 2}
+}
+@media (min-width:1040px){
+  /* neuf en trois rangs de trois : la feuille se remplit exactement */
+  dl.faq{grid-template-columns:repeat(3,1fr)}
+}
 
 
 form{max-width:34rem}
