@@ -561,7 +561,8 @@ var PALIERS = [
   { cle:"agents", mot:"Agents IA", plate:"#49A7D2", wash:"#E1F0F9",
     accroche:"Vos commerciaux répondent en trois heures. Un agent répond en trois minutes, à toute heure, dans la langue du client.",
     fiche:[["Qualification entrante","Ce qu'on automatise"],["Agents + RAG","Technologie"],["≈ 80 % des demandes qualifiées sans intervention","Bénéfice visé","obj"]],
-    recto:{x:64,y:54,w:338,rot:-8}, blob:{x:2,y:41,w:42}, pilote:0 },
+    recto:{x:64,y:54,w:338,rot:-8}, blob:{x:2,y:41,w:42}, pilote:0,
+    affiche:{recto:30, blob:46} },
   { cle:"documents", mot:"Documents", plate:"#F1BB57", wash:"#FAEFDA",
     accroche:"Un devis, un bon de commande, une facture. Trois formats, trois saisies, et trois occasions de se tromper.",
     fiche:[["Extraction et rapprochement","Ce qu'on automatise"],["Agents + OCR + ERP","Technologie"],["≈ 3 h par semaine et par gestionnaire","Bénéfice visé","obj"]],
@@ -569,7 +570,8 @@ var PALIERS = [
   { cle:"publicite", mot:"Publicité", plate:"#E86B49", wash:"#FEE8E1",
     accroche:"Vos campagnes tournent sur six canaux. Personne ne sait lequel rapporte. On branche la mesure avant d'ajouter du budget.",
     fiche:[["Déclinaison et arbitrage","Ce qu'on automatise"],["Agents + API régies","Technologie"],["≈ 30 % de coût par lead en moins","Bénéfice visé","obj"]],
-    recto:{x:69,y:44,w:354,rot:-13}, blob:{x:6,y:39,w:44}, pilote:17 },
+    recto:{x:69,y:44,w:354,rot:-13}, blob:{x:6,y:39,w:44}, pilote:17,
+    affiche:{recto:29, blob:48} },
   { cle:"emails", mot:"Emails", plate:"#6BBEA5", wash:"#E2F3ED",
     accroche:"Quatre cents messages par jour sur une boîte partagée. Le tri prend désormais plus de temps que les réponses.",
     fiche:[["Tri, routage, brouillons","Ce qu'on automatise"],["Agents + boîte partagée","Technologie"],["≈ 90 % des messages routés sans intervention","Bénéfice visé","obj"]],
@@ -578,7 +580,8 @@ var PALIERS = [
        ce tiers-la pour que le mot le traverse — et le robot doit donc etre au
        pole oppose, a droite. C'est la longueur du mot qui commande la place du
        robot, pas l'inverse. */
-    recto:{x:63,y:64,w:313,rot:6}, blob:{x:2,y:39,w:40}, pilote:-3 }
+    recto:{x:63,y:64,w:313,rot:6}, blob:{x:2,y:39,w:40}, pilote:-3,
+    affiche:{recto:32, blob:40} }
 ];
 
 /* Quatre blobs, MEME nombre de points de controle : 1 moveto + 4 cubiques.
@@ -879,13 +882,26 @@ var posters=document.getElementById("posters");
   var h="";
   for(var i=0;i<PALIERS.length;i++){
     var p=PALIERS[i];
+    /* Le heros et l'affiche ne posent pas le lavis au meme endroit, et c'est
+       la seule divergence entre les deux. Dans le heros, les deux colonnes de
+       texte sont en haut a gauche ET en haut a droite : le lavis passe entre
+       les deux et ne touche rien. Dans l'affiche, la fiche descend sous
+       l'accroche et la colonne de gauche s'allonge — le lavis, pose a 2 ou 6 %,
+       traversait alors le texte a TOUTES les tailles mesurees, et son filet de
+       3 px coupait les lettres. L'affiche « Documents » etait la seule epargnee,
+       parce que c'est la seule ou le lavis est a droite et RECTO a gauche.
+       Les trois autres adoptent donc cette disposition. Les valeurs du heros ne
+       bougent pas : p.affiche ne s'applique qu'ici. */
+    var aff = p.affiche || {};
+    var bx = aff.blob  !== undefined ? aff.blob  : p.blob.x;
+    var rx = aff.recto !== undefined ? aff.recto : p.recto.x;
     h+='<section class="poster" style="background:'+p.plate+'">'+
        '<div class="stage">'+
-         '<div class="layer" style="z-index:1"><svg style="position:absolute;left:'+p.blob.x+'%;top:'+p.blob.y+'%;width:'+p.blob.w+'%" viewBox="0 0 400 360" aria-hidden="true">'+
+         '<div class="layer" style="z-index:1"><svg style="position:absolute;left:'+bx+'%;top:'+p.blob.y+'%;width:'+p.blob.w+'%" viewBox="0 0 400 360" aria-hidden="true">'+
            '<path d="'+toPath(BLOBS[i])+'" fill="'+p.wash+'" stroke="#1B1612" stroke-width="3" vector-effect="non-scaling-stroke"/></svg></div>'+
          '<div class="layer mot" style="z-index:2" aria-hidden="true"><span class="w display-palier">'+p.mot+'</span></div>'+
          '<div class="layer marks" id="pm'+i+'" style="z-index:3" aria-hidden="true">'+MARKS[i]+'</div>'+
-         '<div class="p-recto" style="position:absolute;z-index:4;left:'+p.recto.x+'%;top:'+p.recto.y+'%;width:'+(p.recto.w*rectoScale())+'px;'+
+         '<div class="p-recto" style="position:absolute;z-index:4;left:'+rx+'%;top:'+p.recto.y+'%;width:'+(p.recto.w*rectoScale())+'px;'+
            'transform:translate(-50%,-50%) rotate('+p.recto.rot+'deg)" data-pose="'+i+'" data-wash="'+p.wash+'" data-pilote="'+p.pilote+'"></div>'+
          '<div class="layer hud" style="z-index:5">'+
            '<div class="hud-left"><div class="brand pbrand" data-wash="'+p.wash+'">'+brandHTML()+'</div>'+
