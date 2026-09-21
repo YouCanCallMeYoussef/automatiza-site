@@ -554,7 +554,7 @@ footer .brand:hover{color:var(--ink)}
         <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
         <p class="body-sm" id="formNote" role="status" aria-live="polite"
            style="margin-top:var(--s-md);color:var(--maigre)">
-          Prototype — le formulaire n'envoie rien.</p>
+          </p>
       </form>
     </div>
   </section>
@@ -1143,12 +1143,16 @@ var CHAMPS=[
    reglee chez le prestataire. Un service qui s'appelle par
    https://…/votre@adresse est donc exclu, quel qu'il soit.
 
-   ⚠ Remplir cette ligne a un prix juridique, a payer le meme jour : la page
-   confidentialite.html doit alors nommer le prestataire et son pays dans le
-   repere « sous-traitants techniques », et son titre (« deux appels
-   sortants ») cesse d'etre exact. Voir HANDOFF §9.
+   Branche le 21 septembre 2026. Verifie avant : un POST vide sur cet
+   identifiant repond 400 « Can't send an empty form » (le formulaire existe),
+   la ou un identifiant invente repond 404 « Form not found ».
+
+   Remplir cette ligne avait un prix juridique, paye dans le meme commit :
+   confidentialite.html nomme Formspree, Inc. et le traitement aux
+   Etats-Unis, et son titre ne parle plus de « deux appels sortants ». Changer
+   de prestataire, c'est rouvrir ces deux pages le meme jour. Voir HANDOFF §9.
    ------------------------------------------------------------ */
-var ENVOI = "";
+var ENVOI = "https://formspree.io/f/mbglodee";
 
 var form=document.getElementById("qualif");
 var note=document.getElementById("formNote");
@@ -1158,7 +1162,10 @@ var bouton=form.querySelector('button[type="submit"]');
    sur un formulaire branche ferait douter le visiteur que sa demande est
    arrivee — c'est-a-dire l'inverse de ce que dit la note. */
 function pre(t){ return ENVOI ? t : "Prototype — "+t; }
-if(ENVOI) note.textContent="";
+/* Le texte d-accueil de la note est ecrit ici et non dans le HTML : ENVOI
+   reste ainsi le seul interrupteur, et la source ne pretend plus que le
+   formulaire « n'envoie rien » une fois qu-il envoie. */
+note.textContent = ENVOI ? "" : "Prototype — le formulaire n'envoie rien.";
 
 function poseErreur(champ){
   var el=document.getElementById(champ.id), w=el.parentNode;
