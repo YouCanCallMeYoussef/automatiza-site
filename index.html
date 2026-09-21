@@ -1002,6 +1002,12 @@ if(!reduce && hasGsap){
   /* Sens de culbute alterne d'une transition a l'autre */
   var TUMBLE=[28,-32,26];
 
+  /* Largeur de chaque plateau, en fraction d'un segment. Partagee par
+     l'enveloppe ci-dessous ET par l'aimant de palier plus bas : si l'une
+     bougeait sans l'autre, l'aimant se mettrait a tirer sur des images deja
+     justes, ou a laisser le visiteur en plein milieu d'un fondu. */
+  var PLATEAU = 0.26;
+
   function render(p){
     var t = clamp01(p)*3;
     var i = Math.min(2, Math.floor(t));
@@ -1010,7 +1016,7 @@ if(!reduce && hasGsap){
        Ce n'est pas un easing de confort — c'est ce qui fait qu'un palier se lit
        comme un palier et non comme un fondu continu. La valeur reste strictement
        liee a la position de scroll. */
-    var f = smooth(clamp01((local-0.26)/0.48));
+    var f = smooth(clamp01((local-PLATEAU)/(1-2*PLATEAU)));
     var A=PALIERS[i], B=PALIERS[i+1];
 
     hero.style.background = mixHex(A.plate,B.plate,f);
@@ -1092,6 +1098,36 @@ if(!reduce && hasGsap){
     hint.style.opacity = (1-clamp01(p*8))*0.75;
   }
 
+  /* ------------------------------------------------------------
+     L'AIMANT DE PALIER.
+     Un visiteur qui s'arrete entre deux paliers regarde une image cassee :
+     plaque a mi-teinte, robot a 30 degres, deux lavis fondus. On finit donc
+     le geste a sa place — mais seulement la ou c'est utile.
+
+     - Arrete SUR un plateau : on ne bouge pas. Mesure : l'image y est
+       identique au pixel d'un bout a l'autre ; y deplacer la page ne
+       changerait rien a l'ecran et ne ferait que contrarier la main.
+     - Arrete DANS une transition : on termine le mouvement dans le sens ou
+       il allait. Descendre et s'arreter a mi-fondu, c'est vouloir le palier
+       suivant ; remonter, c'est vouloir le precedent. On ne choisit pas « le
+       plus proche » : ce serait parfois renvoyer en arriere quelqu'un qui
+       avancait.
+
+     Ce qui reste interdit, et c'est la raison d'etre de la regle d'origine :
+     jamais pendant que la main bouge — l'aimant n'agit qu'une fois le
+     defilement arrete, et toute nouvelle entree l'interrompt. Hors du heros,
+     il ne fait rien. En prefers-reduced-motion, il n'existe pas : ce sont les
+     affiches statiques qui s'affichent. Le rendu reste lineaire en position de
+     scroll ; c'est le deplacement de la page qui est adouci, pas l'image.
+     ------------------------------------------------------------ */
+  var sens = 1;
+  function palierVise(p){
+    var t = clamp01(p)*3;
+    var i = Math.min(2, Math.floor(t)), local = t - i;
+    if (local <= PLATEAU || local >= 1-PLATEAU) return p;
+    return (sens > 0 ? i+1 : i) / 3;
+  }
+
   gsap.registerPlugin(ScrollTrigger);
   ScrollTrigger.create({
     trigger: hero,
@@ -1102,7 +1138,18 @@ if(!reduce && hasGsap){
     anticipatePin: 1,
     scrub: true,           /* lie a la position native : aucun easing, aucune latence */
     invalidateOnRefresh: true,
-    onUpdate: function(self){ render(self.progress); },
+    snap: {
+      snapTo: palierVise,
+      delay: 0.12,         /* apres l'arret du defilement, pas pendant */
+      duration: { min: 0.25, max: 0.7 },
+      ease: "power2.inOut",
+      inertia: false,      /* on part de la ou la page s'est arretee... */
+      directional: false   /* ...et c'est palierVise qui lit le sens, pas GSAP */
+    },
+    onUpdate: function(self){
+      if (self.direction) sens = self.direction;
+      render(self.progress);
+    },
     onRefresh: function(self){ render(self.progress); }
   });
   render(0);
