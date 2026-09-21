@@ -186,6 +186,18 @@ footer .brand .wm{font-size:20px}
   bottom:calc(clamp(12px,3vh,32px) + 62px);
   color:var(--ink);opacity:.75;display:flex;align-items:center;gap:var(--s-sm)}
 @media (max-width:760px){
+  /* Au format telephone, le CTA fixe (45 px de haut) couvrait le mot geant a
+     tous les paliers, et « Documents » debordait a 360 px. Le mot ne deborde
+     plus par le bas : il se pose au-dessus du CTA, et la composition basse —
+     marques, invite — monte d'autant, pour garder ses ecarts au mot. Le corps
+     suit la largeur : « Documents », le plus long, fait 6,36 fois le corps,
+     donc 14vw tient toujours dans l'ecran. */
+  .stage{--mot-fs:clamp(40px,14vw,102px);
+    --leve:calc(clamp(12px,3vh,32px) + env(safe-area-inset-bottom,0px) + 45px + var(--s-md))}
+  .display-palier{font-size:var(--mot-fs)}
+  .mot .w{bottom:var(--leve)}
+  .marks svg:not(.haut){translate:0 calc(-1 * var(--leve))}
+  #scrollHint{bottom:calc(var(--leve) + .86 * var(--mot-fs) + var(--s-md))}
   #fiche{display:none}
   .hud-left{width:70%;max-width:none}
   /* la largeur de RECTO est posee en JS (voir rectoScale) : une regle ici
@@ -445,10 +457,57 @@ footer .brand:hover{color:var(--ink)}
     </div>
   </section>
 
+  <section id="contact">
+    <div class="wrap">
+      <span class="eyebrow label-caps">Demander un audit</span>
+      <h2 class="headline-lg prose">Six questions, et nous vous rappelons.</h2>
+      <p class="body-lg prose" style="margin-top:var(--s-lg);margin-bottom:var(--s-xl)">Le budget
+        indicatif n'engage à rien. Il sert à savoir si on vous propose un chantier de trois semaines
+        ou de six mois.</p>
+      <!-- action et method : le point de collecte vit ICI, et nulle part ailleurs.
+           Le script le lit sur cet attribut. Sans JavaScript, le formulaire
+           part quand meme, par la voie classique, et Formspree affiche sa
+           propre confirmation ; avec JavaScript, le script prend la main et
+           envoie en arriere-plan sans quitter la page. Retirer l-attribut
+           action repasse le formulaire en prototype qui n-envoie rien. -->
+      <form id="qualif" action="https://formspree.io/f/mbglodee" method="POST" novalidate>
+        <div class="field"><label class="label-caps" for="f-nom">Nom</label>
+          <input id="f-nom" name="nom" autocomplete="name"></div>
+        <div class="field"><label class="label-caps" for="f-soc">Société</label>
+          <input id="f-soc" name="societe" autocomplete="organization"></div>
+        <div class="field"><label class="label-caps" for="f-sec">Secteur</label>
+          <input id="f-sec" name="secteur" placeholder="Transport, distribution, services financiers…"></div>
+        <div class="field"><label class="label-caps" for="f-bes">Besoin</label>
+          <textarea id="f-bes" name="besoin" placeholder="Le process que vous refaites tous les jours."></textarea></div>
+        <div class="field"><label class="label-caps" for="f-bud">Budget indicatif</label>
+          <input id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
+        <div class="field"><label class="label-caps" for="f-ctc">Contact</label>
+          <input id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
+        <!-- Pot de miel. Un robot remplit tous les champs qu-il trouve ; un humain
+             ne voit pas celui-ci. display:none et non la classe .vh : un champ
+             masque visuellement reste atteignable au lecteur d-ecran, et un
+             visiteur aveugle qui le remplirait de bonne foi verrait sa demande
+             jetee comme du spam. Le nom _gotcha est celui que le point de
+             collecte reconnait. -->
+        <div style="display:none" aria-hidden="true">
+          <label>Ne pas remplir <input name="_gotcha" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <input type="hidden" name="_subject" value="Demande d'audit — Automatiza">
+        <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
+        <p class="body-sm" id="formNote" role="status" aria-live="polite"
+           style="margin-top:var(--s-md);color:var(--maigre)">
+          </p>
+      </form>
+    </div>
+  </section>
+
   <!-- La FAQ. La page demandait jusqu-ici un audit d-entreprise sans traiter une
        seule objection : tout ce qui bloque une signature — le prix, la sortie,
        les donnees, la propriete du code — restait hors de l-ecran. Les reponses
-       ne promettent rien que les etapes 01 a 05 ne tiennent deja. -->
+       ne promettent rien que les etapes 01 a 05 ne tiennent deja.
+       Placee APRES le formulaire, a la demande du proprietaire : le visiteur
+       decide arrive au formulaire sans traverser les objections ; celui qui
+       hesite les trouve juste en dessous, et le CTA fixe le ramene. -->
   <section id="faq">
     <div class="wrap">
       <span class="eyebrow label-caps">Questions</span>
@@ -518,50 +577,6 @@ footer .brand:hover{color:var(--ink)}
           </div>
         </dl>
       </div>
-    </div>
-  </section>
-
-  <section id="contact">
-    <div class="wrap">
-      <span class="eyebrow label-caps">Demander un audit</span>
-      <h2 class="headline-lg prose">Six questions, et nous vous rappelons.</h2>
-      <p class="body-lg prose" style="margin-top:var(--s-lg);margin-bottom:var(--s-xl)">Le budget
-        indicatif n'engage à rien. Il sert à savoir si on vous propose un chantier de trois semaines
-        ou de six mois.</p>
-      <!-- action et method : le point de collecte vit ICI, et nulle part ailleurs.
-           Le script le lit sur cet attribut. Sans JavaScript, le formulaire
-           part quand meme, par la voie classique, et Formspree affiche sa
-           propre confirmation ; avec JavaScript, le script prend la main et
-           envoie en arriere-plan sans quitter la page. Retirer l-attribut
-           action repasse le formulaire en prototype qui n-envoie rien. -->
-      <form id="qualif" action="https://formspree.io/f/mbglodee" method="POST" novalidate>
-        <div class="field"><label class="label-caps" for="f-nom">Nom</label>
-          <input id="f-nom" name="nom" autocomplete="name"></div>
-        <div class="field"><label class="label-caps" for="f-soc">Société</label>
-          <input id="f-soc" name="societe" autocomplete="organization"></div>
-        <div class="field"><label class="label-caps" for="f-sec">Secteur</label>
-          <input id="f-sec" name="secteur" placeholder="Transport, distribution, services financiers…"></div>
-        <div class="field"><label class="label-caps" for="f-bes">Besoin</label>
-          <textarea id="f-bes" name="besoin" placeholder="Le process que vous refaites tous les jours."></textarea></div>
-        <div class="field"><label class="label-caps" for="f-bud">Budget indicatif</label>
-          <input id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
-        <div class="field"><label class="label-caps" for="f-ctc">Contact</label>
-          <input id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
-        <!-- Pot de miel. Un robot remplit tous les champs qu-il trouve ; un humain
-             ne voit pas celui-ci. display:none et non la classe .vh : un champ
-             masque visuellement reste atteignable au lecteur d-ecran, et un
-             visiteur aveugle qui le remplirait de bonne foi verrait sa demande
-             jetee comme du spam. Le nom _gotcha est celui que le point de
-             collecte reconnait. -->
-        <div style="display:none" aria-hidden="true">
-          <label>Ne pas remplir <input name="_gotcha" tabindex="-1" autocomplete="off"></label>
-        </div>
-        <input type="hidden" name="_subject" value="Demande d'audit — Automatiza">
-        <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
-        <p class="body-sm" id="formNote" role="status" aria-live="polite"
-           style="margin-top:var(--s-md);color:var(--maigre)">
-          </p>
-      </form>
     </div>
   </section>
 
