@@ -282,6 +282,11 @@ form{max-width:34rem}
   transition:background 120ms cubic-bezier(.2,0,0,1)}
 .btn-p{background:var(--prusse);color:var(--surface)}
 .btn-p:hover{background:var(--ink)}
+/* Pendant l-envoi. Le survol et l-appui cessent de repondre : un bouton qui
+   s-enfonce encore alors qu-il ne fait plus rien est un mensonge d-un pixel. */
+.btn:disabled{opacity:.55;cursor:progress}
+.btn-p:disabled:hover{background:var(--prusse)}
+.btn:disabled:active{transform:none}
 .btn-s{background:var(--neutral);color:var(--prusse)}
 .btn-s:hover{background:var(--border)}
 /* L-etat actif. Le survol dit « ceci repond », l-appui doit dire « c-est
@@ -529,6 +534,16 @@ footer .brand:hover{color:var(--ink)}
           <input id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
         <div class="field"><label class="label-caps" for="f-ctc">Contact</label>
           <input id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
+        <!-- Pot de miel. Un robot remplit tous les champs qu-il trouve ; un humain
+             ne voit pas celui-ci. display:none et non la classe .vh : un champ
+             masque visuellement reste atteignable au lecteur d-ecran, et un
+             visiteur aveugle qui le remplirait de bonne foi verrait sa demande
+             jetee comme du spam. Le nom _gotcha est celui que le point de
+             collecte reconnait. -->
+        <div style="display:none" aria-hidden="true">
+          <label>Ne pas remplir <input name="_gotcha" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <input type="hidden" name="_subject" value="Demande d'audit — Automatiza">
         <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
         <p class="body-sm" id="formNote" role="status" aria-live="polite"
            style="margin-top:var(--s-md);color:var(--maigre)">
@@ -1109,8 +1124,34 @@ var CHAMPS=[
     test:function(v){ return RE_MAIL.test(v)||RE_TEL.test(v); },
     format:"Ce contact n'est ni un email ni un numéro de téléphone. Vérifiez la saisie." }
 ];
+/* ------------------------------------------------------------
+   POINT DE COLLECTE — la seule ligne a changer pour que le formulaire envoie.
+
+   Vide : le formulaire valide tout, n'envoie rien, et le DIT (« Prototype — »).
+   Rempli : envoi reel, en arriere-plan, sans quitter la page.
+
+   Format attendu : l'adresse d'un formulaire Formspree, du type
+   "https://formspree.io/f/xxxxxxxx". C'est un identifiant opaque — l'adresse
+   de destination ne figure JAMAIS dans cette page (HANDOFF §7.6), elle est
+   reglee chez le prestataire. Un service qui s'appelle par
+   https://…/votre@adresse est donc exclu, quel qu'il soit.
+
+   ⚠ Remplir cette ligne a un prix juridique, a payer le meme jour : la page
+   confidentialite.html doit alors nommer le prestataire et son pays dans le
+   repere « sous-traitants techniques », et son titre (« deux appels
+   sortants ») cesse d'etre exact. Voir HANDOFF §9.
+   ------------------------------------------------------------ */
+var ENVOI = "";
+
 var form=document.getElementById("qualif");
 var note=document.getElementById("formNote");
+var bouton=form.querySelector('button[type="submit"]');
+
+/* Le prefixe « Prototype — » n'a de sens que tant que rien ne part. Le garder
+   sur un formulaire branche ferait douter le visiteur que sa demande est
+   arrivee — c'est-a-dire l'inverse de ce que dit la note. */
+function pre(t){ return ENVOI ? t : "Prototype — "+t; }
+if(ENVOI) note.textContent="";
 
 function poseErreur(champ){
   var el=document.getElementById(champ.id), w=el.parentNode;
@@ -1131,8 +1172,17 @@ function poseErreur(champ){
   return el;
 }
 
+/* Verrou d-envoi. Le bouton neutralise arrete le double-clic et la touche
+   Entree, mais pas un envoi par programme : requestSubmit() ignore l-etat du
+   bouton, et une extension de remplissage automatique peut l-appeler. Mesure
+   avant ce verrou : deux soumissions rapprochees = deux requetes = deux
+   rappels pour le meme prospect. Le verrou vit donc dans la logique, pas
+   dans le DOM. */
+var enCours=false;
+
 form.addEventListener("submit", function(e){
   e.preventDefault();
+  if(enCours) return;
   var premier=null;
   for(var i=0;i<CHAMPS.length;i++){
     var fautif=poseErreur(CHAMPS[i]);
@@ -1143,13 +1193,65 @@ form.addEventListener("submit", function(e){
        premier champ n-entend sinon qu-une erreur sur quatre. */
     var n=form.querySelectorAll(".field.err").length;
     note.textContent = n>1
-      ? "Prototype — "+n+" champs sont à corriger avant l'envoi."
-      : "Prototype — un champ est à corriger avant l'envoi.";
+      ? pre(n+" champs sont à corriger avant l'envoi.")
+      : pre("un champ est à corriger avant l'envoi.");
     premier.focus();
     return;
   }
-  note.textContent="Prototype — rien n'a été envoyé, mais le formulaire est valide.";
+  if(!ENVOI){
+    note.textContent="Prototype — rien n'a été envoyé, mais le formulaire est valide.";
+    return;
+  }
+  envoyer();
 });
+
+/* L'envoi. Trois etats, et chacun dit la verite sur ce qui s'est passe.
+   - En cours : bouton neutralise, sinon un double-clic d'impatience envoie
+     deux demandes et le prospect recoit deux rappels.
+   - Recu : on vide le formulaire, et on ne promet que ce que la page promet
+     deja (« nous vous rappelons ») — aucun delai invente.
+   - Echec : on NE VIDE RIEN. Le prospect a pris cinq minutes a decrire son
+     process ; les lui effacer sur une coupure reseau, c'est le perdre. */
+function envoyer(){
+  var donnees=new FormData(form);
+  var ctc=document.getElementById("f-ctc").value.trim();
+  /* Si le contact est un email, il devient l'adresse de reponse : repondre au
+     prospect se fait alors d'un clic, depuis la boite de reception. Si c'est
+     un numero, il n'y a rien a y mettre. */
+  if(RE_MAIL.test(ctc)) donnees.append("_replyto", ctc);
+
+  enCours=true;
+  bouton.disabled=true;
+  form.setAttribute("aria-busy","true");
+  note.textContent="Envoi en cours…";
+
+  /* Sans limite, une requete qui ne revient jamais laisse le bouton gele pour
+     toujours, sans un mot : l'etat le plus deroutant possible. */
+  var ctrl=("AbortController" in window) ? new AbortController() : null;
+  var minuterie=setTimeout(function(){ if(ctrl) ctrl.abort(); }, 15000);
+
+  function fin(){
+    clearTimeout(minuterie);
+    enCours=false;
+    bouton.disabled=false;
+    form.removeAttribute("aria-busy");
+  }
+
+  fetch(ENVOI, { method:"POST", body:donnees,
+                 headers:{ "Accept":"application/json" },
+                 signal: ctrl ? ctrl.signal : undefined })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+    .then(function(){
+      fin();
+      form.reset();
+      note.textContent="Demande reçue. Nous vous rappelons.";
+    })
+    .catch(function(){
+      fin();
+      note.textContent="L'envoi n'a pas abouti. Vos réponses sont toujours là — "+
+                       "réessayez dans un instant.";
+    });
+}
 
 /* La correction efface l-erreur des qu-elle est faite, pas au prochain envoi :
    laisser un champ en rouge apres l-avoir rempli, c-est mentir a l-appui. */
@@ -1163,7 +1265,7 @@ for(var ci=0;ci<CHAMPS.length;ci++){
          entierement valide. Le test du texte courant garde l-annonce unique —
          sans lui, chaque sortie de champ la revocaliserait. */
       if(!form.querySelector(".field.err") && note.textContent.indexOf("corriger")>-1)
-        note.textContent="Prototype — le formulaire n'envoie rien.";
+        note.textContent = ENVOI ? "" : "Prototype — le formulaire n'envoie rien.";
     });
   })(CHAMPS[ci]);
 }
