@@ -15,6 +15,12 @@
      n-empeche pas une vignette dans un message, seulement un resultat de
      recherche. -->
 <meta name="robots" content="noindex, nofollow">
+<!-- Adresse canonique : la racine nue, sans www. GitHub Pages redirige de
+     lui-meme www vers l-adresse ecrite dans le fichier CNAME ; si les deux
+     etaient laissees servir le meme contenu, un moteur y verrait deux pages
+     identiques, et un partage sur l-une ne consoliderait pas l-autre. -->
+<link rel="canonical" href="https://futur-trade.com/">
+<meta property="og:url" content="https://futur-trade.com/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:site_name" content="Automatiza">
@@ -25,10 +31,11 @@
      tools/og-card.html (voir HANDOFF §8). Rien n-y est redessine, donc rien ne
      peut y vieillir a part : le jour ou RECTO, une plaque ou une accroche
      change, on relance la commande et la vignette suit.
-     ⚠ A LA MISE EN LIGNE : og:image doit devenir une URL ABSOLUE. LinkedIn et
-     Facebook n-acceptent pas le chemin relatif — l-apercu retomberait sur une
-     carte de texte nu sans que rien ne le signale. -->
-<meta property="og:image" content="og-image.png">
+     URL ABSOLUE, et c-est obligatoire : LinkedIn et Facebook refusent le
+     chemin relatif, et l-apercu retombe alors sur une carte de texte nu sans
+     que rien ne le signale. En https explicite, pas en // : certains
+     robots d-apercu ne resolvent pas le schema implicite. -->
+<meta property="og:image" content="https://futur-trade.com/og-image.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">

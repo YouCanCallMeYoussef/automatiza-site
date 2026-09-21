@@ -13,4 +13,4 @@ Disallow: /
 # A LA MISE EN LIGNE, remplacer tout ce qui precede par :
 #   User-agent: *
 #   Allow: /
-#   Sitemap: https://VOTRE-DOMAINE/sitemap.xml
+#   Sitemap: https://futur-trade.com/sitemap.xml
