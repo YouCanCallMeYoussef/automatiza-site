@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page introuvable — Automatiza</title>
+<meta name="description" content="Cette adresse ne correspond à aucune page du site Automatiza.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/legal.css">
+<!-- Chemins absolus, contrairement aux deux pages legales : une 404 est servie
+     a la place de n-importe quelle URL, y compris /un/chemin/profond. En
+     relatif, la feuille de style et la faviconne se chercheraient a cote de
+     l-URL fautive et ne seraient pas trouvees — la page d-erreur arriverait
+     elle-meme cassee, ce qui est le seul defaut qu-une page d-erreur ne peut
+     pas se permettre. -->
+<style>
+  /* Le numero se lit comme le mot geant du heros : c-est le seul endroit du
+     regime papier qui emprunte ce corps, et il le fait parce qu-une 404 est
+     une affiche, pas un paragraphe. Pas de plaque en aplat ici : le visiteur
+     est perdu, ce n-est pas le moment de lui servir le grand jeu. */
+  .code{font-family:var(--display);font-weight:900;font-size:clamp(72px,18vw,180px);
+    line-height:.86;letter-spacing:-.045em;color:var(--ink);margin:0 0 var(--s-lg)}
+  .pistes{margin:var(--s-xl) 0 0;padding:0;list-style:none}
+  .pistes li{margin:0 0 var(--s-sm)}
+  .pistes a{font-family:var(--display);font-weight:900}
+</style>
+
+<main>
+  <div class="wrap">
+    <a class="retour" href="/">← Automatiza</a>
+    <span class="eyebrow">Erreur 404</span>
+    <p class="code" aria-hidden="true">404</p>
+    <h1 class="prose">Cette adresse ne mène à rien.</h1>
+
+    <div class="prose">
+      <p>Le lien est peut-être ancien, ou mal recopié. Rien n'est cassé de votre côté.</p>
+      <ul class="pistes">
+        <li><a href="/">Retour à l'accueil</a></li>
+        <li><a href="/#how">Comment se passe un audit</a></li>
+        <li><a href="/#faq">Les questions qu'on nous pose avant de signer</a></li>
+        <li><a href="/#contact">Demander un audit</a></li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p style="margin:0">Automatiza — automatisation de processus par l'IA. Dubaï.
+      Édité par <strong>FTL Company</strong>.</p>
+    <nav class="foot-nav" aria-label="Informations légales">
+      <a href="/mentions-legales.html">Mentions légales</a>
+      <a href="/confidentialite.html">Confidentialité</a>
+    </nav>
+  </div>
+</footer>

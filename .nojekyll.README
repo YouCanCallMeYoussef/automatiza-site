@@ -1,0 +1,4 @@
+Le fichier .nojekyll (vide) a cote de celui-ci coupe le traitement Jekyll de
+GitHub Pages. Sans lui, Pages ignore silencieusement tout fichier ou dossier
+commencant par un underscore et ajoute une etape de construction inutile a un
+site deja statique. Ne pas supprimer.

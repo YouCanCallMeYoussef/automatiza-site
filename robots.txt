@@ -1,0 +1,16 @@
+# ETAT : PRE-LANCEMENT. Le site est en ligne pour etre regarde et partage
+# deliberement, pas pour etre trouve. Tant que les reperes rouges des deux
+# pages legales ne sont pas remplis et que le formulaire n-a pas de
+# destination reelle, rien ici ne doit entrer dans un index.
+#
+# Cette ligne seule ne suffit pas : robots.txt empeche l-exploration, pas
+# l-indexation d-une URL decouverte par un lien. Les quatre pages portent donc
+# aussi <meta name="robots" content="noindex">. Les deux se retirent ensemble
+# le jour du lancement, pas l-un sans l-autre.
+User-agent: *
+Disallow: /
+
+# A LA MISE EN LIGNE, remplacer tout ce qui precede par :
+#   User-agent: *
+#   Allow: /
+#   Sitemap: https://VOTRE-DOMAINE/sitemap.xml
