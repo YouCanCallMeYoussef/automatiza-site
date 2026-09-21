@@ -528,7 +528,13 @@ footer .brand:hover{color:var(--ink)}
       <p class="body-lg prose" style="margin-top:var(--s-lg);margin-bottom:var(--s-xl)">Le budget
         indicatif n'engage à rien. Il sert à savoir si on vous propose un chantier de trois semaines
         ou de six mois.</p>
-      <form id="qualif" novalidate>
+      <!-- action et method : le point de collecte vit ICI, et nulle part ailleurs.
+           Le script le lit sur cet attribut. Sans JavaScript, le formulaire
+           part quand meme, par la voie classique, et Formspree affiche sa
+           propre confirmation ; avec JavaScript, le script prend la main et
+           envoie en arriere-plan sans quitter la page. Retirer l-attribut
+           action repasse le formulaire en prototype qui n-envoie rien. -->
+      <form id="qualif" action="https://formspree.io/f/mbglodee" method="POST" novalidate>
         <div class="field"><label class="label-caps" for="f-nom">Nom</label>
           <input id="f-nom" name="nom" autocomplete="name"></div>
         <div class="field"><label class="label-caps" for="f-soc">Société</label>
@@ -1119,6 +1125,17 @@ if(!reduce && hasGsap){
      il ne fait rien. En prefers-reduced-motion, il n'existe pas : ce sont les
      affiches statiques qui s'affichent. Le rendu reste lineaire en position de
      scroll ; c'est le deplacement de la page qui est adouci, pas l'image.
+
+     POURQUOI IL EST ECRIT A LA MAIN, et pas avec l'option snap de
+     ScrollTrigger. La premiere version l'utilisait ; a l'usage, la page
+     restait figee un quart de seconde avant de partir. Mesure image par
+     image : 150 ms d'immobilite, puis 3 % seulement du trajet dans les
+     100 premieres ms. La courbe se corrige, l'immobilite non : dans sa
+     source (3.12.5), l'aimant de ScrollTrigger refuse de partir tant que sa
+     propre mesure de vitesse n'est pas retombee sous 10 px/s, et cette mesure
+     n'est echantillonnee que toutes les 50 ms. Aucun reglage ne descend sous
+     ce plancher. Ici, c'est l'arret de la MAIN qui declenche, pas une vitesse
+     lissee.
      ------------------------------------------------------------ */
   var sens = 1;
   function palierVise(p){
@@ -1129,7 +1146,7 @@ if(!reduce && hasGsap){
   }
 
   gsap.registerPlugin(ScrollTrigger);
-  ScrollTrigger.create({
+  var st = ScrollTrigger.create({
     trigger: hero,
     start: "top top",
     end: function(){ return "+=" + (window.innerHeight*3.4); },
@@ -1138,14 +1155,6 @@ if(!reduce && hasGsap){
     anticipatePin: 1,
     scrub: true,           /* lie a la position native : aucun easing, aucune latence */
     invalidateOnRefresh: true,
-    snap: {
-      snapTo: palierVise,
-      delay: 0.12,         /* apres l'arret du defilement, pas pendant */
-      duration: { min: 0.25, max: 0.7 },
-      ease: "power2.inOut",
-      inertia: false,      /* on part de la ou la page s'est arretee... */
-      directional: false   /* ...et c'est palierVise qui lit le sens, pas GSAP */
-    },
     onUpdate: function(self){
       if (self.direction) sens = self.direction;
       render(self.progress);
@@ -1153,6 +1162,63 @@ if(!reduce && hasGsap){
     onRefresh: function(self){ render(self.progress); }
   });
   render(0);
+
+  /* --- Declenchement ---
+     MOLETTE : on part des que les crans ont cesse depuis 60 ms ET que la
+     page est immobile depuis 40 ms. Les 60 ms separent un geste continu de
+     son arret — une molette tournee sans interruption envoie un cran toutes
+     les 15 a 50 ms. Les 40 ms d'immobilite laissent le navigateur finir sa
+     propre glissade de defilement doux : l'aimant la prolonge, il ne la
+     coupe pas en plein vol, ce qui la ferait trembler.
+     DOIGT, CLAVIER, BARRE : on part 40 ms apres l'arret de la page, et jamais
+     tant qu'un doigt ou un bouton est pose — l'inertie d'un glisse au doigt
+     finit donc toujours sa course avant que l'aimant ne la prenne. */
+  var ATTENTE_CRANS = 60, ATTENTE_ARRET = 40;
+  var tCran = 0, tDefil = 0, appuye = false, aimant = null, ySuivi = -1, veille = null;
+
+  function dormir(){ clearTimeout(veille); veille = setTimeout(verifier, ATTENTE_ARRET); }
+  function lacher(){ if (aimant) { aimant.kill(); aimant = null; } }
+
+  function verifier(){
+    if (appuye || aimant) return;
+    var t = performance.now();
+    var reste = Math.max(ATTENTE_CRANS - (t - tCran), ATTENTE_ARRET - (t - tDefil));
+    if (reste > 0) { veille = setTimeout(verifier, reste); return; }
+    var y = window.scrollY;
+    if (y < st.start || y > st.end) return;                 /* hors du heros */
+    var p = (y - st.start) / (st.end - st.start);
+    var vise = palierVise(p);
+    if (vise === p) return;                                  /* plateau : l'image est deja juste */
+    var yVise = Math.round(st.start + vise * (st.end - st.start));
+    var etat = { y: y };
+    aimant = gsap.to(etat, {
+      y: yVise,
+      /* 0,25 s pour un petit reste, 0,55 s pour une transition presque
+         entiere : proportionnel a la distance, jamais une traine lente */
+      duration: Math.min(0.55, Math.max(0.25, Math.abs(yVise - y) / 1500)),
+      /* part a pleine vitesse et freine en arrivant : l'image est celle d'un
+         aimant qui attrape, pas d'un objet qui se met en branle */
+      ease: "power3.out",
+      onUpdate: function(){ ySuivi = Math.round(etat.y); window.scrollTo(0, ySuivi); },
+      onComplete: function(){ aimant = null; }
+    });
+  }
+
+  addEventListener("wheel", function(){ tCran = performance.now(); lacher(); dormir(); }, { passive: true });
+  addEventListener("scroll", function(){
+    /* nos propres deplacements ne relancent rien ; tout autre deplacement
+       pendant l'aimant, c'est la main qui reprend : elle gagne */
+    if (aimant && Math.abs(window.scrollY - ySuivi) <= 2) return;
+    lacher(); tDefil = performance.now(); dormir();
+  }, { passive: true });
+  addEventListener("keydown", lacher, { passive: true });
+  addEventListener("touchstart", function(){ appuye = true; lacher(); }, { passive: true });
+  addEventListener("pointerdown", function(){ appuye = true; lacher(); }, { passive: true });
+  function relache(){ appuye = false; dormir(); }
+  addEventListener("touchend", relache, { passive: true });
+  addEventListener("touchcancel", relache, { passive: true });
+  addEventListener("pointerup", relache, { passive: true });
+  addEventListener("pointercancel", relache, { passive: true });
   window.addEventListener("load", function(){ ScrollTrigger.refresh(); });
 }
 
@@ -1179,10 +1245,17 @@ var CHAMPS=[
     format:"Ce contact n'est ni un email ni un numéro de téléphone. Vérifiez la saisie." }
 ];
 /* ------------------------------------------------------------
-   POINT DE COLLECTE — la seule ligne a changer pour que le formulaire envoie.
+   POINT DE COLLECTE — il se regle sur l'attribut action de <form id="qualif">,
+   et nulle part ailleurs : le script le LIT la, il n'en garde pas de copie.
+   Deux copies finissent toujours par diverger, et un formulaire qui envoie
+   sans JavaScript a une adresse et avec JavaScript a une autre est le pire
+   des cas, puisque chaque moitie semble marcher.
 
-   Vide : le formulaire valide tout, n'envoie rien, et le DIT (« Prototype — »).
-   Rempli : envoi reel, en arriere-plan, sans quitter la page.
+   Sans action : le formulaire valide tout, n'envoie rien, et le DIT
+   (« Prototype — »).
+   Avec action : envoi reel, en arriere-plan, sans quitter la page. Et si le
+   JavaScript ne charge pas, le formulaire part quand meme par la voie
+   classique — c'est ce que l'attribut apporte en plus.
 
    Format attendu : l'adresse d'un formulaire Formspree, du type
    "https://formspree.io/f/xxxxxxxx". C'est un identifiant opaque — l'adresse
@@ -1194,14 +1267,13 @@ var CHAMPS=[
    identifiant repond 400 « Can't send an empty form » (le formulaire existe),
    la ou un identifiant invente repond 404 « Form not found ».
 
-   Remplir cette ligne avait un prix juridique, paye dans le meme commit :
+   Poser cet attribut avait un prix juridique, paye dans le meme commit :
    confidentialite.html nomme Formspree, Inc. et le traitement aux
    Etats-Unis, et son titre ne parle plus de « deux appels sortants ». Changer
    de prestataire, c'est rouvrir ces deux pages le meme jour. Voir HANDOFF §9.
    ------------------------------------------------------------ */
-var ENVOI = "https://formspree.io/f/mbglodee";
-
 var form=document.getElementById("qualif");
+var ENVOI = form.getAttribute("action") || "";
 var note=document.getElementById("formNote");
 var bouton=form.querySelector('button[type="submit"]');
 
