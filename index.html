@@ -178,6 +178,14 @@ img{max-width:100%}
 }
 #recto{position:absolute;z-index:4;width:240px;will-change:left,top,width,transform}
 #recto svg{display:block;width:100%;height:auto;overflow:visible}
+/* Ombre portee de RECTO : un halo flou, fixe a l'ecran — la lumiere ne
+   tourne pas avec lui quand il culbute — et une ombre au sol (voir render). */
+#recto{filter:drop-shadow(6px 12px 8px rgba(27,22,18,.28))}
+#rectoOmbre{position:absolute;z-index:4;border-radius:50%;background:rgba(27,22,18,.32);
+  filter:blur(5px);transform:translate(-50%,-50%);pointer-events:none;will-change:left,top,width,opacity}
+.poster .p-recto svg{filter:drop-shadow(6px 12px 8px rgba(27,22,18,.28))}
+.p-ombre{position:absolute;z-index:4;border-radius:50%;background:rgba(27,22,18,.32);
+  filter:blur(5px);transform:translate(-50%,-50%);pointer-events:none}
 .hud{z-index:5;padding:clamp(20px,4vh,44px) clamp(16px,3.4vw,48px);display:flex;
   justify-content:space-between;gap:var(--s-lg);align-items:flex-start}
 .hud>*{pointer-events:auto}
@@ -185,7 +193,7 @@ img{max-width:100%}
 #accroche{color:var(--ink);will-change:opacity}
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:var(--s-lg);color:inherit;text-decoration:none}
 .brand svg{display:block;height:36px;width:auto;flex:none}
-.brand svg .fine{display:none}
+.brand svg .fine,.brand svg .vol{display:none}
 /* le logotype garde un trait de 3 px fixes : a trente pixels de haut, un
    trait proportionnel au dessin y disparaitrait */
 .brand svg [stroke]{stroke-width:3px;vector-effect:non-scaling-stroke}
@@ -478,6 +486,7 @@ footer .langues a{text-decoration:none}
               vector-effect="non-scaling-stroke"></path></svg></div>
       <div class="layer mot" id="motWrap" aria-hidden="true"></div>
       <div class="layer marks" id="marks" aria-hidden="true"></div>
+      <div id="rectoOmbre" aria-hidden="true"></div>
       <div id="recto" aria-hidden="true"></div>
       <div class="layer hud">
         <div class="hud-left">
@@ -920,19 +929,39 @@ var MARKS = [
    ============================================================ */
 /* Les traits sont en unites du dessin, et non plus en pixels d'ecran : ils
    s'affinent quand le robot rapetisse. En pixels fixes (3 px), ils pesaient
-   autant sur un robot de 170 px de large, sur telephone, que sur un robot de
-   350 px, et les contours voisins s'y touchaient. A la taille ordinaire du
-   heros, 2,6 unites font environ 2 px.
+   autant sur le robot de 170 px du telephone que sur celui de 350 px du grand
+   ecran, et les contours voisins — face et tranche — s'y touchaient. A la
+   taille ordinaire du heros, 2,6 unites font environ 2 px.
    KF est le trait fin des details. Ils etaient ecrits K + stroke-width="2" :
    un attribut en double, dont le navigateur ne garde que le premier — tous
    les details sortaient donc a 3 px, aussi epais que les contours. */
 var K='stroke="#1B1612" stroke-width="2.6" stroke-linejoin="round"';
 var KF='stroke="#1B1612" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"';
 
+/* ------------------------------------------------------------
+   LE VOLUME. RECTO etait dessine a plat ; il a maintenant une epaisseur, une
+   face d'ombre et un reflet, eclaire d'en haut a gauche.
+   - L'epaisseur : chaque piece pleine est d'abord dessinee decalee de
+     (7,6) vers le bas a droite, dans une teinte plus sombre de son encre
+     (classe rSide) : c'est la tranche de la piece. Chaque piece peint sa
+     tranche juste avant sa face, dans l'ordre d'empilement du dessin ; une
+     piece posee devant une autre projette donc sa tranche sur elle.
+   - L'ombre et le reflet : un voile d'encre a 14 % sur le flanc droit, un
+     filet blanc sur l'arete gauche. Des voiles et non des teintes calculees :
+     ils marchent sur les cinq encres sans rien savoir d'elles.
+   Tout le volume porte la classe « vol », masquee au format logotype, ou
+   elle ne ferait qu'empater un dessin de trente pixels.
+   ------------------------------------------------------------ */
+var DECALE='transform="translate(7,6)"';
+function tranche(d){ return '<path d="'+d+'" class="vol rSide" '+DECALE+' '+K+'/>'; }
+function piece(d){ return tranche(d)+'<path d="'+d+'" class="rFill" '+K+'/>'; }
+function ombre(d,o){ return '<path d="'+d+'" class="vol" fill="#1B1612" fill-opacity="'+(o||0.14)+'"/>'; }
+function reflet(d,w){ return '<path d="'+d+'" class="vol" fill="none" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="'+((w||4)*0.75)+'" stroke-linecap="round"/>'; }
+
 /* Le casque facette vient du logotype ; le grand bandeau de visiere, le disque
    d'oreille et la base cylindrique segmentee viennent de la reference robot.
-   Ne sont repris ni le rendu (degrades, brillance, ombre portee) ni les yeux
-   souriants : la visiere est un champ noir ou glisse le pilote. */
+   Les yeux souriants de la reference ne sont pas repris : la visiere est un
+   champ noir ou glisse le pilote. */
 function tete(){
   return (
   /* Arceau de casque — une BANDE pleine, pas un fil.
@@ -940,12 +969,16 @@ function tete(){
      lisait comme une antenne, exactement la signature de clipart que la
      specification interdit. Referme en bande a deux valeurs, il redevient une
      piece d'appareil. Son extremite passe SOUS la coque, dessinee juste apres. */
-  '<path d="M-74,-58 C-80,-96 -54,-120 -18,-116 L-16,-104 '+
-          'C-48,-108 -64,-88 -59,-58 Z" class="rFill" '+K+'/>'+
+  piece("M-74,-58 C-80,-96 -54,-120 -18,-116 L-16,-104 C-48,-108 -64,-88 -59,-58 Z")+
+  reflet("M-70,-64 C-74,-92 -54,-112 -26,-113",3)+
   /* coque facettee */
-  '<path d="M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z" class="rFill" '+K+'/>'+
+  piece("M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z")+
+  ombre("M24,-112 L30,-112 L46,-88 L46,-40 L30,-24 L20,-24 L35,-42 L35,-86 Z")+
+  reflet("M-41,-84 L-27,-106")+
   /* bandeau de visiere — champ noir plein, pas d-yeux */
   '<path d="M-32,-82 L-21,-96 L21,-96 L32,-82 L32,-48 L21,-38 L-21,-38 L-32,-48 Z" fill="#1B1612"/>'+
+  /* vitre bombee : un pan de lumiere en haut a gauche du champ noir */
+  '<path class="vol" d="M-27,-80 L-18,-91 L4,-91 L-16,-68 L-27,-68 Z" fill="#FFFFFF" fill-opacity=".13"/>'+
   /* le pilote : une seule marque, qui glisse de gauche a droite.
      Repere par une CLASSE et non par un id : tete() est appelee trois fois par
      document — le robot et les deux logotypes — et le meme id y apparaissait
@@ -953,7 +986,9 @@ function tete(){
      rattrapait que les affiches, pas les logotypes. */
   '<rect class="pilote rFill" x="-6" y="-73" width="12" height="12"/>'+
   /* disque d-oreille — repere d-orientation, cote gauche uniquement */
+  '<circle cx="-60" cy="-60" r="15" class="vol rSide" '+DECALE+' '+K+'/>'+
   '<circle cx="-60" cy="-60" r="15" class="rFill" '+K+'/>'+
+  ombre("M-60,-75 A15,15 0 0 1 -60,-45 A10,15 0 0 0 -60,-75 Z",0.16)+
   '<circle cx="-60" cy="-60" r="6" fill="#1B1612"/>'+
   /* detail fin : masque au format logotype, ou il ne serait que du bruit */
   '<g class="fine">'+
@@ -985,19 +1020,23 @@ function tete(){
    faisait que retrecir du haut vers le bas et rien ne disait « epaules ». */
 var CHASSIS =
   /* base cylindrique segmentee, pas de jambes */
-  '<path d="M-32,108 L32,108 L29,128 L-29,128 Z" class="rFill" '+K+'/>'+
-  '<path d="M-29,128 L29,128 L26,148 L-26,148 Z" class="rFill" '+K+'/>'+
-  '<path d="M-26,148 L26,148 L34,170 L-34,170 Z" class="rFill" '+K+'/>'+
+  piece("M-26,148 L26,148 L34,170 L-34,170 Z")+ombre("M12,148 L26,148 L34,170 L16,170 Z")+
+  piece("M-29,128 L29,128 L26,148 L-26,148 Z")+ombre("M13,128 L29,128 L26,148 L11,148 Z")+
+  piece("M-32,108 L32,108 L29,128 L-29,128 Z")+ombre("M15,108 L32,108 L29,128 L13,128 Z")+
   /* torse */
-  '<path d="M-44,-8 L44,-8 L44,92 L32,108 L-32,108 L-44,92 Z" class="rFill" '+K+'/>'+
+  piece("M-44,-8 L44,-8 L44,92 L32,108 L-32,108 L-44,92 Z")+
+  ombre("M28,-8 L44,-8 L44,92 L32,108 L16,108 L28,92 Z")+
+  reflet("M-37,6 L-37,88")+
   /* collerette facettee, reprise du logotype */
-  '<path d="M-30,-24 L30,-24 L23,-8 L-23,-8 Z" class="rFill" '+K+'/>'+
+  piece("M-30,-24 L30,-24 L23,-8 L-23,-8 Z")+ombre("M14,-24 L30,-24 L23,-8 L9,-8 Z")+
   /* bagues de cou, dans la collerette : c-est ce qui dit que la tete pivote */
   '<g class="fine"><path d="M-25,-19 h50 M-23,-13 h46" fill="none" '+KF+'/></g>'+
   /* Yoke d-epaules — une piece unique posee SUR le torse et plus large que lui.
      Les epaulieres d-avant etaient dessinees a l-interieur du contour du torse,
      dans le meme aplat et sans arete : rien n-en etait visible. */
-  '<path d="M-58,4 L-48,-8 L48,-8 L58,4 L58,15 L48,23 L-48,23 L-58,15 Z" class="rFill" '+K+'/>'+
+  piece("M-58,4 L-48,-8 L48,-8 L58,4 L58,15 L48,23 L-48,23 L-58,15 Z")+
+  ombre("M-58,12 L58,12 L58,15 L48,23 L-48,23 L-58,15 Z")+
+  reflet("M-49,-2 L46,-2",3)+
   /* fente de poitrine, sous le yoke */
   '<rect x="-19" y="34" width="38" height="9" fill="#1B1612"/>'+
   /* detail fin du torse et de la base */
@@ -1029,26 +1068,36 @@ var CHASSIS =
   '</g>'+
   tete();
 
-/* Un bras : deux segments au trait, un point de pivot plein a chaque articulation,
-   la main est un crochet ouvert. Jamais de forme pleine. */
+/* Un bras : deux segments en TUBE — un trait d'encre large, puis un trait
+   plus etroit a l'encre du palier, puis un filet de lumiere — et une rotule a
+   chaque articulation. La main reste un crochet ouvert, au trait.
+   Les tubes sont en unites du dessin et non en pixels d'ecran : ils
+   s'amincissent avec le robot, comme un volume, la ou le trait de contour
+   garde son epaisseur. */
+function rotule(x,y,r){
+  return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" class="rFill" '+K+'/>'+
+    ombre("M"+x+","+(y-r)+" A"+r+","+r+" 0 0 1 "+x+","+(y+r)+" A"+(r*.6)+","+r+" 0 0 0 "+x+","+(y-r)+" Z",0.18)+
+    '<circle class="vol" cx="'+(x-r*.35)+'" cy="'+(y-r*.35)+'" r="'+(r*.28)+'" fill="#FFFFFF" fill-opacity=".7"/>';
+}
 function bras(sx,sy,ex,ey,hx,hy,hook){
-  var g='<g fill="none" stroke="#1B1612" stroke-width="2.6" stroke-linecap="round">';
-  g+='<path d="M'+sx+','+sy+' L'+ex+','+ey+' L'+hx+','+hy+'"/>';
-  g+='<path d="'+hook+'"/>';
+  var d='M'+sx+','+sy+' L'+ex+','+ey+' L'+hx+','+hy;
+  var g='<g fill="none" stroke-linecap="round" stroke-linejoin="round">';
+  g+='<path d="'+d+'" stroke="#1B1612" stroke-width="12"/>';
+  g+='<path d="'+d+'" class="rStroke" stroke-width="7"/>';
+  g+='<path class="vol" d="'+d+'" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.8" transform="translate(-1.5,-1.5)"/>';
   g+='</g>';
-  g+='<g fill="#1B1612">';
-  g+='<circle cx="'+sx+'" cy="'+sy+'" r="6"/><circle cx="'+ex+'" cy="'+ey+'" r="5"/><circle cx="'+hx+'" cy="'+hy+'" r="4"/>';
-  g+='</g>';
+  g+='<path d="'+hook+'" fill="none" stroke="#1B1612" stroke-width="2.6" stroke-linecap="round"/>';
+  g+=rotule(sx,sy,9)+rotule(ex,ey,8)+rotule(hx,hy,6.5);
   /* manchon d-avant-bras, au tiers du segment coude-main */
   var mx=ex+(hx-ex)*0.34, my=ey+(hy-ey)*0.34, nx=ex+(hx-ex)*0.52, ny=ey+(hy-ey)*0.52;
   g+='<g class="fine"><path d="M'+mx.toFixed(1)+','+my.toFixed(1)+' L'+nx.toFixed(1)+','+ny.toFixed(1)+
-     '" fill="none" stroke="#1B1612" stroke-width="5.5" stroke-linecap="butt"/>';
+     '" fill="none" stroke="#1B1612" stroke-width="13" stroke-linecap="butt"/>';
   /* bague de coude et manchon de bras, au trait : l-articulation cesse d-etre
      un simple point et devient une piece */
   var ux=sx+(ex-sx)*0.45, uy=sy+(ey-sy)*0.45, vx=sx+(ex-sx)*0.6, vy=sy+(ey-sy)*0.6;
-  g+='<circle cx="'+ex+'" cy="'+ey+'" r="10" fill="none" stroke="#1B1612" stroke-width="1.6"/>';
+  g+='<circle cx="'+ex+'" cy="'+ey+'" r="12" fill="none" stroke="#1B1612" stroke-width="1.6"/>';
   g+='<path d="M'+ux.toFixed(1)+','+uy.toFixed(1)+' L'+vx.toFixed(1)+','+vy.toFixed(1)+
-     '" fill="none" stroke="#1B1612" stroke-width="5.5" stroke-linecap="butt"/></g>';
+     '" fill="none" stroke="#1B1612" stroke-width="13" stroke-linecap="butt"/></g>';
   return g;
 }
 /* Le bras au repos, commun aux paliers 1 et 2. Il descend le long du torse a
@@ -1182,6 +1231,16 @@ function mixHex(a,b,t){
   if(dh<-Math.PI) dh+=TAU;
   return lchToHex(lerp(A[0],B[0],t), lerp(A[1],B[1],t), A[2]+dh*t);
 }
+/* Met RECTO (ou le logotype) a l'encre donnee : faces, tubes des bras, et
+   tranches dans la meme encre assombrie de 28 % vers le noir de cle. Seul
+   point du script qui sait quelles classes portent quelle couleur. */
+function tranchePour(encre){ return mixHex(encre,"#1B1612",0.28); }
+function peindre(racine,encre){
+  var i, t=tranchePour(encre);
+  var f=racine.querySelectorAll(".rFill");   for(i=0;i<f.length;i++) f[i].setAttribute("fill",encre);
+  var k=racine.querySelectorAll(".rStroke"); for(i=0;i<k.length;i++) k[i].setAttribute("stroke",encre);
+  var d=racine.querySelectorAll(".rSide");   for(i=0;i<d.length;i++) d[i].setAttribute("fill",t);
+}
 /* Les lignes marquees "obj" s-inversent : l-etiquette passe au-dessus et le
    chiffre descend au corps de l-etiquette. Les deux premieres lignes de la
    fiche sont des faits — ce qu-on automatise, avec quoi — la troisieme est un
@@ -1229,6 +1288,11 @@ var posters=document.getElementById("posters");
            '<path d="'+toPath(BLOBS[i])+'" fill="'+p.wash+'" stroke="#1B1612" stroke-width="3" vector-effect="non-scaling-stroke"/></svg></div>'+
          '<div class="layer mot" style="z-index:2" aria-hidden="true"><span class="w display-palier">'+p.mot+'</span></div>'+
          '<div class="layer marks" id="pm'+i+'" style="z-index:3" aria-hidden="true">'+MARKS[i]+'</div>'+
+         (function(){
+           var e=p.recto.w*rectoScale()/400, a=p.recto.rot*Math.PI/180;
+           return '<div class="p-ombre" style="left:calc('+rx+'% + '+(-Math.sin(a)*175*e).toFixed(1)+'px);'+
+             'top:calc('+p.recto.y+'% + '+(Math.cos(a)*175*e+34*e).toFixed(1)+'px);width:'+(190*e).toFixed(1)+'px;height:'+(30*e).toFixed(1)+'px" aria-hidden="true"></div>';
+         })()+
          '<div class="p-recto" style="position:absolute;z-index:4;left:'+rx+'%;top:'+p.recto.y+'%;width:'+(p.recto.w*rectoScale())+'px;'+
            'transform:translate(-50%,-50%) rotate('+p.recto.rot+'deg)" data-pose="'+i+'" data-wash="'+p.wash+'" data-pilote="'+p.pilote+'"></div>'+
          '<div class="layer hud" style="z-index:5">'+
@@ -1244,8 +1308,7 @@ var posters=document.getElementById("posters");
     boxes[j].innerHTML=rectoSVG();
     var svg=boxes[j].firstChild, w=boxes[j].getAttribute("data-wash"),
         pose=+boxes[j].getAttribute("data-pose");
-    var fills=svg.querySelectorAll(".rFill");
-    for(var k=0;k<fills.length;k++) fills[k].setAttribute("fill",w);
+    peindre(svg,w);
     var ps=svg.querySelectorAll(".pose");
     for(var k2=0;k2<ps.length;k2++) ps[k2].style.opacity = (k2===pose?1:0);
     svg.querySelector(".pilote").setAttribute("x", (-6 + (+boxes[j].getAttribute("data-pilote"))));
@@ -1293,6 +1356,8 @@ if(!reduce && hasGsap){
   var mots=motWrap.querySelectorAll(".w"), msets=marksEl.querySelectorAll(".mset");
   var asets=accrocheEl.querySelectorAll(".aset"), fsets=ficheEl.querySelectorAll(".fset");
   var poses=rectoEl.querySelectorAll(".pose"), rFills=rectoEl.querySelectorAll(".rFill");
+  var rStrokes=rectoEl.querySelectorAll(".rStroke"), rSides=rectoEl.querySelectorAll(".rSide");
+  var ombreSol=document.getElementById("rectoOmbre");
   var pilote=rectoEl.querySelector(".pilote");
 
   /* Sens de culbute alterne d'une transition a l'autre */
@@ -1366,6 +1431,21 @@ if(!reduce && hasGsap){
     rectoEl.style.width= (lerp(A.recto.w,B.recto.w,f)*rectoScale())+"px";
     rectoEl.style.transform = "translate(-50%,-50%) rotate("+(lerp(A.recto.rot,B.recto.rot,f)+tumble)+"deg)";
     for(var q=0;q<rFills.length;q++) rFills[q].setAttribute("fill",wash);
+    for(var q2=0;q2<rStrokes.length;q2++) rStrokes[q2].setAttribute("stroke",wash);
+    var tr=tranchePour(wash);
+    for(var q3=0;q3<rSides.length;q3++) rSides[q3].setAttribute("fill",tr);
+    /* L'ombre au sol. Elle suit le pied de RECTO — le bas de sa base, a 175
+       unites sous le centre du dessin — tourne avec lui, et se resserre et
+       palit pendant la culbute : le robot quitte le sol, son ombre le dit. */
+    var ang=(lerp(A.recto.rot,B.recto.rot,f)+tumble)*Math.PI/180;
+    var ech=lerp(A.recto.w,B.recto.w,f)*rectoScale()/400;
+    var cx=lerp(A.recto.x,B.recto.x,f)/100*hero.clientWidth - Math.sin(ang)*175*ech;
+    var cy=lerp(A.recto.y,B.recto.y,f)/100*hero.clientHeight + Math.cos(ang)*175*ech + 34*ech;
+    var leve=Math.abs(Math.sin(Math.PI*f));
+    ombreSol.style.width=(190*ech*(1-0.3*leve))+"px";
+    ombreSol.style.height=(30*ech*(1-0.3*leve))+"px";
+    ombreSol.style.left=cx+"px"; ombreSol.style.top=(cy+40*ech*leve)+"px";
+    ombreSol.style.opacity=(1-0.55*leve).toFixed(3);
     /* le logotype prend l-encre du palier, comme le robot qu-il represente */
     for(var b=0;b<brandFills.length;b++) brandFills[b].setAttribute("fill",wash);
     pilote.setAttribute("x", (-6 + lerp(A.pilote,B.pilote,f)).toFixed(1));
@@ -1589,9 +1669,9 @@ if(!reduce && hasGsap){
       '<path d="M'+(x-24)+','+(y-36)+'h30M'+(x-24)+','+(y-26)+'h44M'+(x-24)+','+(y-16)+'h20" stroke="#49A7D2" stroke-width="3" stroke-linecap="round"/>'+
       '<path d="M'+(x-42)+','+(y-6)+'H'+(x+42)+'L'+(x+38)+','+y+'H'+(x-38)+'Z" fill="'+PAPIER+'" '+TR+'/>';
   }
-  function robot(a,i,cx,o){
+  function robot(a,i,cx,o,filtre){
     var svg=rectoSVG().replace('<svg viewBox','<svg x="'+(cx-200)+'" y="'+(o-210)+'" width="400" height="410" overflow="visible" viewBox');
-    return '<g class="r'+(i+1)+'" data-pose="'+a.pose+'" data-encre="'+a.encre+'" transform="rotate('+a.rot+' '+cx+' '+(o+100)+')">'+svg+'</g>';
+    return '<g class="r'+(i+1)+'" data-pose="'+a.pose+'" data-encre="'+a.encre+'" transform="rotate('+a.rot+' '+cx+' '+(o+100)+')" filter="url(#'+filtre+')">'+svg+'</g>';
   }
   function corps(cols,PW){
     var n=1; for(var i=0;i<MOTS.length;i++) n=Math.max(n,MOTS[i].length);
@@ -1605,7 +1685,13 @@ if(!reduce && hasGsap){
     var W=cols*400, rangs=4/cols, ECART=390, O=400;
     var dessus=function(r){ return O+r*ECART+100; };
     var H=dessus(rangs-1)+130;
-    var g='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+    /* Ombre portee des robots sur le mur, lumiere en haut a gauche comme
+       sur leurs volumes. Un filtre par scene : les deux scenes sont dans la
+       meme page, et deux id identiques s'y marcheraient dessus. */
+    var filtre="ombreMur"+cols;
+    var g='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+
+      '<defs><filter id="'+filtre+'" x="-20%" y="-20%" width="150%" height="150%">'+
+      '<feDropShadow dx="12" dy="14" stdDeviation="7" flood-color="#1B1612" flood-opacity=".22"/></filter></defs>';
     g+='<rect width="'+W+'" height="'+dessus(0)+'" fill="'+MUR+'"/>';
     g+='<rect y="'+dessus(0)+'" width="'+W+'" height="'+(H-dessus(0))+'" fill="'+SOL+'"/>';
     if(cols===4){ g+=horloge(110,116,52)+fenetre(640,36,320,160)+tableau(1240,36,300,160); }
@@ -1613,7 +1699,7 @@ if(!reduce && hasGsap){
     var objets=[plante,tasse,portable], n=0;
     for(var r=0;r<rangs;r++){
       var o=O+r*ECART, d=dessus(r);
-      for(var c=0;c<cols;c++){ var i=r*cols+c; g+=robot(AGENTS[i],i,200+c*400,o); }
+      for(var c=0;c<cols;c++){ var i=r*cols+c; g+=robot(AGENTS[i],i,200+c*400,o,filtre); }
       /* le bureau : plateau, facade, et une plaque par agent */
       g+='<rect x="20" y="'+d+'" width="'+(W-40)+'" height="16" fill="'+PAPIER+'" '+TR+'/>';
       g+='<rect x="40" y="'+(d+16)+'" width="'+(W-80)+'" height="84" fill="'+FACADE+'" '+TR+'/>';
@@ -1640,8 +1726,7 @@ if(!reduce && hasGsap){
     var rs=box.querySelectorAll("[data-pose]");
     for(var q=0;q<rs.length;q++){
       var pose=+rs[q].getAttribute("data-pose"), encre=rs[q].getAttribute("data-encre");
-      var fills=rs[q].querySelectorAll(".rFill");
-      for(var k=0;k<fills.length;k++) fills[k].setAttribute("fill",encre);
+      peindre(rs[q],encre);
       var ps=rs[q].querySelectorAll(".pose");
       for(var k2=0;k2<ps.length;k2++) if(k2!==pose) ps[k2].parentNode.removeChild(ps[k2]);
     }
