@@ -180,7 +180,8 @@ img{max-width:100%}
 #recto svg{display:block;width:100%;height:auto;overflow:visible}
 /* Ombre portee de RECTO : un halo flou, fixe a l'ecran — la lumiere ne
    tourne pas avec lui quand il culbute — et une ombre au sol (voir render). */
-#recto{filter:drop-shadow(6px 12px 8px rgba(27,22,18,.28))}
+#recto{filter:drop-shadow(6px 12px 8px rgba(27,22,18,.26))}
+@media (max-width:760px){#recto,.poster .p-recto svg{filter:drop-shadow(3px 6px 4px rgba(27,22,18,.24))}}
 #rectoOmbre{position:absolute;z-index:4;border-radius:50%;background:rgba(27,22,18,.32);
   filter:blur(5px);transform:translate(-50%,-50%);pointer-events:none;will-change:left,top,width,opacity}
 .poster .p-recto svg{filter:drop-shadow(6px 12px 8px rgba(27,22,18,.28))}
@@ -194,6 +195,8 @@ img{max-width:100%}
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:var(--s-lg);color:inherit;text-decoration:none}
 .brand svg{display:block;height:36px;width:auto;flex:none}
 .brand svg .fine,.brand svg .vol{display:none}
+/* le logotype garde un trait de 3 px fixes, quelle que soit sa taille */
+.brand svg [stroke]{stroke-width:3px;vector-effect:non-scaling-stroke}
 .brand .wm{font-family:var(--display);font-weight:900;font-size:23px;line-height:1;
   letter-spacing:-.025em;font-variation-settings:'wght' 900,'wdth' 100}
 footer .brand{margin-bottom:var(--s-md);color:var(--ink)}
@@ -434,6 +437,38 @@ footer .langues a{text-decoration:none}
 [dir=rtl] #scrollHint{direction:rtl}
 </style>
 
+<!-- Les degrades du volume de RECTO, definis une fois pour toute la page.
+     Un svg de taille nulle et NON display:none : un degrade range dans un
+     sous-arbre masque cesse de s'afficher dans certains navigateurs, et les
+     robots des affiches et de la scene etroite sont justement masques par
+     moments. objectBoundingBox : chaque piece recoit le degrade a sa taille. -->
+<svg id="azDefs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="azModele" x1="0" y1="0" x2="1" y2=".55">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+      <stop offset=".38" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".62" stop-color="#1B1612" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1B1612" stop-opacity=".30"/>
+    </linearGradient>
+    <linearGradient id="azModeleV" x1="0" y1="0" x2=".25" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".6"/>
+      <stop offset=".45" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".65" stop-color="#1B1612" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1B1612" stop-opacity=".28"/>
+    </linearGradient>
+    <radialGradient id="azSphere" cx=".36" cy=".32" r=".78">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".85"/>
+      <stop offset=".3" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset=".7" stop-color="#1B1612" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1B1612" stop-opacity=".38"/>
+    </radialGradient>
+    <linearGradient id="azVitre" x1="0" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".32"/>
+      <stop offset=".42" stop-color="#FFFFFF" stop-opacity=".06"/>
+      <stop offset=".43" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
 <a data-i18n="skip" class="skip label-action" href="#how">Aller au contenu</a>
 
 <main id="main">
@@ -924,179 +959,122 @@ var MARKS = [
    Chassis, tete et visiere sont UN SEUL groupe partage, jamais echange.
    Seuls changent : les bras, la position du pilote, l'inclinaison de la base.
    ============================================================ */
-var K='stroke="#1B1612" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
+/* ------------------------------------------------------------
+   RECTO — le kit de dessin.
+   Le trait de contour est en unites du dessin (3,5) et non en pixels
+   d'ecran : il s'affine quand le robot rapetisse. En pixels fixes, il pesait
+   trois pixels sur un robot de 170 px de large, et sur telephone les
+   contours voisins se touchaient et faisaient des paquets. Le logotype, lui,
+   garde un trait de 3 px fixes (voir .brand svg dans la feuille de style) :
+   a trente pixels de haut, un trait proportionnel disparaitrait.
+   ------------------------------------------------------------ */
+var K='stroke="#1B1612" stroke-width="3.5" stroke-linejoin="round"';
+var TRAIT='fill="none" stroke="#1B1612" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"';
 
 /* ------------------------------------------------------------
-   LE VOLUME. RECTO etait dessine a plat ; il a maintenant une epaisseur, une
-   face d'ombre et un reflet, eclaire d'en haut a gauche.
-   - L'epaisseur : chaque piece pleine est d'abord dessinee decalee de
-     (7,6) vers le bas a droite, dans une teinte plus sombre de son encre
-     (classe rSide) : c'est la tranche de la piece. Chaque piece peint sa
-     tranche juste avant sa face, dans l'ordre d'empilement du dessin ; une
-     piece posee devant une autre projette donc sa tranche sur elle.
-   - L'ombre et le reflet : un voile d'encre a 14 % sur le flanc droit, un
-     filet blanc sur l'arete gauche. Des voiles et non des teintes calculees :
-     ils marchent sur les cinq encres sans rien savoir d'elles.
-   Tout le volume porte la classe « vol », masquee au format logotype, ou
-   elle ne ferait qu'empater un dessin de trente pixels.
+   LE VOLUME, eclaire d'en haut a gauche. Un seul contour par piece ; le
+   relief vient de la matiere, pas de traits ajoutes.
+   - La tranche : la piece redessinee decalee de (6,5), dans son encre
+     assombrie, SANS contour. C'est l'epaisseur de la piece. La version
+     precedente la cernait aussi : chaque piece portait deux contours, et
+     c'est ce doublement qui chargeait le dessin.
+   - Le modele : un degrade pose sur la face — lumiere en haut a gauche,
+     transparent au centre, ombre en bas a droite. Blanc et noir de cle
+     transparents, donc valable pour les cinq encres sans les connaitre.
+   - Les rotules : un degrade radial, la sphere se lit sans un trait de plus.
+   Les degrades sont definis une seule fois pour la page (#azDefs). La
+   classe « vol » est masquee au format logotype.
    ------------------------------------------------------------ */
-var DECALE='transform="translate(7,6)"';
-function tranche(d){ return '<path d="'+d+'" class="vol rSide" '+DECALE+' '+K+'/>'; }
-function piece(d){ return tranche(d)+'<path d="'+d+'" class="rFill" '+K+'/>'; }
-function ombre(d,o){ return '<path d="'+d+'" class="vol" fill="#1B1612" fill-opacity="'+(o||0.14)+'"/>'; }
-function reflet(d,w){ return '<path d="'+d+'" class="vol" fill="none" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="'+(w||4)+'" stroke-linecap="round"/>'; }
+var DECALE='transform="translate(6,5)"';
+function tranche(d){ return '<path d="'+d+'" class="vol rSide" '+DECALE+'/>'; }
+function piece(d,modele){
+  return tranche(d)+'<path d="'+d+'" class="rFill"/>'+
+    '<path d="'+d+'" class="vol" fill="url(#'+(modele||"azModele")+')"/>'+
+    '<path d="'+d+'" fill="none" '+K+'/>';
+}
+function disque(cx,cy,r){
+  return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" class="vol rSide" '+DECALE+'/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" class="rFill"/>'+
+    '<circle class="vol" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="url(#azSphere)"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" '+K+'/>';
+}
 
 /* Le casque facette vient du logotype ; le grand bandeau de visiere, le disque
    d'oreille et la base cylindrique segmentee viennent de la reference robot.
    Les yeux souriants de la reference ne sont pas repris : la visiere est un
    champ noir ou glisse le pilote. */
+var VISIERE="M-32,-82 L-21,-96 L21,-96 L32,-82 L32,-48 L21,-38 L-21,-38 L-32,-48 Z";
 function tete(){
   return (
-  /* Arceau de casque — une BANDE pleine, pas un fil.
-     Dessine en trait simple il se terminait en l'air au-dessus du casque et
-     lisait comme une antenne, exactement la signature de clipart que la
-     specification interdit. Referme en bande a deux valeurs, il redevient une
-     piece d'appareil. Son extremite passe SOUS la coque, dessinee juste apres. */
+  /* Arceau de casque — une BANDE pleine, pas un fil : en trait simple il
+     lisait comme une antenne. Son extremite passe SOUS la coque. */
   piece("M-74,-58 C-80,-96 -54,-120 -18,-116 L-16,-104 C-48,-108 -64,-88 -59,-58 Z")+
-  reflet("M-70,-64 C-74,-92 -54,-112 -26,-113",3)+
   /* coque facettee */
   piece("M-46,-88 L-30,-112 L30,-112 L46,-88 L46,-40 L30,-24 L-30,-24 L-46,-40 Z")+
-  ombre("M24,-112 L30,-112 L46,-88 L46,-40 L30,-24 L20,-24 L35,-42 L35,-86 Z")+
-  reflet("M-41,-84 L-27,-106")+
-  /* bandeau de visiere — champ noir plein, pas d-yeux */
-  '<path d="M-32,-82 L-21,-96 L21,-96 L32,-82 L32,-48 L21,-38 L-21,-38 L-32,-48 Z" fill="#1B1612"/>'+
-  /* vitre bombee : un pan de lumiere en haut a gauche du champ noir */
-  '<path class="vol" d="M-27,-80 L-18,-91 L4,-91 L-16,-68 L-27,-68 Z" fill="#FFFFFF" fill-opacity=".13"/>'+
-  /* le pilote : une seule marque, qui glisse de gauche a droite.
-     Repere par une CLASSE et non par un id : tete() est appelee trois fois par
-     document — le robot et les deux logotypes — et le meme id y apparaissait
-     donc trois fois. Le nettoyage a posteriori qui trainait plus bas ne
-     rattrapait que les affiches, pas les logotypes. */
+  /* bandeau de visiere — champ noir plein, pas d-yeux — et sa vitre bombee */
+  '<path d="'+VISIERE+'" fill="#1B1612"/>'+
+  '<path class="vol" d="'+VISIERE+'" fill="url(#azVitre)"/>'+
+  /* le pilote : une seule marque, qui glisse de gauche a droite. Repere par
+     une CLASSE : tete() sert aussi aux logotypes, un id s'y repeterait. */
   '<rect class="pilote rFill" x="-6" y="-73" width="12" height="12"/>'+
   /* disque d-oreille — repere d-orientation, cote gauche uniquement */
-  '<circle cx="-60" cy="-60" r="15" class="vol rSide" '+DECALE+' '+K+'/>'+
-  '<circle cx="-60" cy="-60" r="15" class="rFill" '+K+'/>'+
-  ombre("M-60,-75 A15,15 0 0 1 -60,-45 A10,15 0 0 0 -60,-75 Z",0.16)+
-  '<circle cx="-60" cy="-60" r="6" fill="#1B1612"/>'+
-  /* detail fin : masque au format logotype, ou il ne serait que du bruit */
-  '<g class="fine">'+
-    '<path d="M30,-112 L35,-80" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-46,-62 L-40,-62" fill="none" '+K+' stroke-width="2"/>'+
-    '<circle cx="-38" cy="-32" r="3" fill="#1B1612"/>'+
-    '<circle cx="38" cy="-32" r="3" fill="#1B1612"/>'+
-    /* couture de coque, sur la coque et non au-dessus : le rectangle flottant
-       qui tenait ici se lisait comme la boule d-une antenne */
-    '<path d="M-18,-112 L-18,-100" fill="none" '+K+' stroke-width="2"/>'+
-    /* Ouies de ventilation sur la joue droite, entre la visiere et l-arete :
-       trois traits courts, decales, pour qu-ils se lisent comme une grille
-       usinee et non comme des moustaches. */
-    '<path d="M36,-78 h7 M36,-70 h7 M36,-62 h7" fill="none" '+K+' stroke-width="2"/>'+
-    /* reflet de visiere — une seule barre, a l-encre du palier, en bas a
-       gauche du champ noir : le pilote reste le seul element qui bouge */
-    '<rect x="-25" y="-49" width="14" height="3" class="rFill"/>'+
-    /* temoin de casque, sur la facette haute */
-    '<rect x="8" y="-108" width="8" height="5" fill="#1B1612"/>'+
-    /* rainure de l-arceau, parallele a son bord */
-    '<path d="M-68,-62 C-72,-90 -52,-110 -22,-110" fill="none" '+K+' stroke-width="1.5"/>'+
-    /* vis centrale du disque d-oreille */
-    '<path d="M-64,-60 h8" fill="none" stroke="#F4F0E7" stroke-width="1.5" vector-effect="non-scaling-stroke"/>'+
-  '</g>');
+  disque(-60,-60,15)+
+  '<circle cx="-60" cy="-60" r="5.5" fill="#1B1612"/>');
 }
 /* Largeurs, de la plus large a la plus etroite : yoke 116, casque 92, torse 88,
-   base 64. C'est le yoke qui doit etre le point le plus large du personnage.
-   Quand le casque l-etait, la silhouette se lisait comme une quille : elle ne
-   faisait que retrecir du haut vers le bas et rien ne disait « epaules ». */
+   base 64. C'est le yoke qui doit etre le point le plus large du personnage :
+   sinon la silhouette se lit comme une quille. */
 var CHASSIS =
-  /* base cylindrique segmentee, pas de jambes */
-  piece("M-26,148 L26,148 L34,170 L-34,170 Z")+ombre("M12,148 L26,148 L34,170 L16,170 Z")+
-  piece("M-29,128 L29,128 L26,148 L-26,148 Z")+ombre("M13,128 L29,128 L26,148 L11,148 Z")+
-  piece("M-32,108 L32,108 L29,128 L-29,128 Z")+ombre("M15,108 L32,108 L29,128 L13,128 Z")+
+  /* base cylindrique segmentee, pas de jambes ; du bas vers le haut, pour que
+     chaque anneau pose sa tranche sur celui du dessous */
+  piece("M-26,148 L26,148 L34,170 L-34,170 Z")+
+  piece("M-29,128 L29,128 L26,148 L-26,148 Z")+
+  piece("M-32,108 L32,108 L29,128 L-29,128 Z")+
   /* torse */
   piece("M-44,-8 L44,-8 L44,92 L32,108 L-32,108 L-44,92 Z")+
-  ombre("M28,-8 L44,-8 L44,92 L32,108 L16,108 L28,92 Z")+
-  reflet("M-37,6 L-37,88")+
   /* collerette facettee, reprise du logotype */
-  piece("M-30,-24 L30,-24 L23,-8 L-23,-8 Z")+ombre("M14,-24 L30,-24 L23,-8 L9,-8 Z")+
-  /* bagues de cou, dans la collerette : c-est ce qui dit que la tete pivote */
-  '<g class="fine"><path d="M-25,-19 h50 M-23,-13 h46" fill="none" '+K+' stroke-width="1.5"/></g>'+
-  /* Yoke d-epaules — une piece unique posee SUR le torse et plus large que lui.
-     Les epaulieres d-avant etaient dessinees a l-interieur du contour du torse,
-     dans le meme aplat et sans arete : rien n-en etait visible. */
-  piece("M-58,4 L-48,-8 L48,-8 L58,4 L58,15 L48,23 L-48,23 L-58,15 Z")+
-  ombre("M-58,12 L58,12 L58,15 L48,23 L-48,23 L-58,15 Z")+
-  reflet("M-49,-2 L46,-2",3)+
+  piece("M-30,-24 L30,-24 L23,-8 L-23,-8 Z","azModeleV")+
+  /* Yoke d-epaules — une piece unique posee SUR le torse, plus large que lui */
+  piece("M-58,4 L-48,-8 L48,-8 L58,4 L58,15 L48,23 L-48,23 L-58,15 Z","azModeleV")+
   /* fente de poitrine, sous le yoke */
-  '<rect x="-19" y="34" width="38" height="9" fill="#1B1612"/>'+
-  /* detail fin du torse et de la base */
+  '<rect x="-19" y="34" width="38" height="9" rx="1.5" fill="#1B1612"/>'+
+  /* Trois details, pas plus : deux temoins et un cadran, du MEME cote. Les
+     ouies, coutures, rivets, trappe et galets d'avant sont retires : a la
+     taille telephone ils ne faisaient plus que du bruit entre les contours.
+     Les temoins symetriques sous la fente lisaient comme un visage triste ;
+     la dissymetrie les rend a l'instrument. */
   '<g class="fine">'+
-    /* Les deux temoins restent du MEME cote et la couture est verticale, a
-       droite. Temoins symetriques sous la fente, plus un filet horizontal, et
-       le torse se lisait comme un visage triste : fente=yeux, temoins=nez,
-       filet=bouche. La dissymetrie est ce qui le rend a nouveau instrument. */
-    '<rect x="-19" y="52" width="7" height="7" fill="#1B1612"/>'+
-    '<rect x="-8" y="52" width="7" height="7" fill="#1B1612"/>'+
-    '<path d="M22,50 L22,92" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-16,135 h32 M-16,142 h32" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-23,117 h46" fill="none" '+K+' stroke-width="2"/>'+
-    /* rivets du yoke, un a chaque epaule */
-    '<circle cx="-49" cy="8" r="2.5" fill="#1B1612"/><circle cx="49" cy="8" r="2.5" fill="#1B1612"/>'+
-    '<circle cx="-49" cy="17" r="2.5" fill="#1B1612"/><circle cx="49" cy="17" r="2.5" fill="#1B1612"/>'+
-    /* Cadran de charge, sous les temoins et du MEME cote qu-eux : a droite il
-       ferait pendant a la couture et le torse redeviendrait un visage. */
-    '<circle cx="-10" cy="78" r="10" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-10,78 L-4,71" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-19,78 h3 M-10,69 v3" fill="none" '+K+' stroke-width="1.5"/>'+
-    /* trappe de flanc, a gauche, avec ses deux vis */
-    '<path d="M-38,30 h10 v44 h-10" fill="none" '+K+' stroke-width="2"/>'+
-    '<circle cx="-33" cy="36" r="1.8" fill="#1B1612"/><circle cx="-33" cy="68" r="1.8" fill="#1B1612"/>'+
-    /* roulement de la base : deux galets vus de face, dans le dernier segment */
-    '<circle cx="-18" cy="160" r="4" fill="none" '+K+' stroke-width="2"/>'+
-    '<circle cx="18" cy="160" r="4" fill="none" '+K+' stroke-width="2"/>'+
-    '<path d="M-8,160 h16" fill="none" '+K+' stroke-width="2"/>'+
+    '<rect x="-19" y="54" width="7" height="7" fill="#1B1612"/>'+
+    '<rect x="-8" y="54" width="7" height="7" fill="#1B1612"/>'+
+    '<circle cx="-10" cy="80" r="9" fill="none" stroke="#1B1612" stroke-width="2.5"/>'+
+    '<path d="M-10,80 L-5,74" stroke="#1B1612" stroke-width="2.5" stroke-linecap="round"/>'+
   '</g>'+
   tete();
 
-/* Un bras : deux segments en TUBE — un trait d'encre large, puis un trait
-   plus etroit a l'encre du palier, puis un filet de lumiere — et une rotule a
-   chaque articulation. La main reste un crochet ouvert, au trait.
-   Les tubes sont en unites du dessin et non en pixels d'ecran : ils
-   s'amincissent avec le robot, comme un volume, la ou le trait de contour
-   garde son epaisseur. */
+/* Un bras : deux segments en TUBE — un trait d'encre large, l'encre du palier
+   dedans, un filet de lumiere —, une rotule a chaque articulation, et la main,
+   un crochet ouvert au trait. Plus de manchons ni de bagues : trois pieces
+   par bras, pas six. */
 function rotule(x,y,r){
-  return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" class="rFill" '+K+'/>'+
-    ombre("M"+x+","+(y-r)+" A"+r+","+r+" 0 0 1 "+x+","+(y+r)+" A"+(r*.6)+","+r+" 0 0 0 "+x+","+(y-r)+" Z",0.18)+
-    '<circle class="vol" cx="'+(x-r*.35)+'" cy="'+(y-r*.35)+'" r="'+(r*.28)+'" fill="#FFFFFF" fill-opacity=".7"/>';
+  return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" class="rFill"/>'+
+    '<circle class="vol" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="url(#azSphere)"/>'+
+    '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="none" '+K+'/>';
 }
 function bras(sx,sy,ex,ey,hx,hy,hook){
   var d='M'+sx+','+sy+' L'+ex+','+ey+' L'+hx+','+hy;
   var g='<g fill="none" stroke-linecap="round" stroke-linejoin="round">';
-  g+='<path d="'+d+'" stroke="#1B1612" stroke-width="15"/>';
-  g+='<path d="'+d+'" class="rStroke" stroke-width="9"/>';
-  g+='<path class="vol" d="'+d+'" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2.5" transform="translate(-2,-2)"/>';
+  g+='<path d="'+d+'" stroke="#1B1612" stroke-width="13"/>';
+  g+='<path d="'+d+'" class="rStroke" stroke-width="6"/>';
+  g+='<path class="vol" d="'+d+'" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="1.8" transform="translate(-1.2,-1.2)"/>';
+  g+='<path d="'+hook+'" '+TRAIT+'/>';
   g+='</g>';
-  g+='<path d="'+hook+'" fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
-  g+=rotule(sx,sy,9)+rotule(ex,ey,8)+rotule(hx,hy,6.5);
-  /* manchon d-avant-bras, au tiers du segment coude-main */
-  var mx=ex+(hx-ex)*0.34, my=ey+(hy-ey)*0.34, nx=ex+(hx-ex)*0.52, ny=ey+(hy-ey)*0.52;
-  g+='<g class="fine"><path d="M'+mx.toFixed(1)+','+my.toFixed(1)+' L'+nx.toFixed(1)+','+ny.toFixed(1)+
-     '" fill="none" stroke="#1B1612" stroke-width="17" stroke-linecap="butt"/>';
-  /* bague de coude et manchon de bras, au trait : l-articulation cesse d-etre
-     un simple point et devient une piece */
-  var ux=sx+(ex-sx)*0.45, uy=sy+(ey-sy)*0.45, vx=sx+(ex-sx)*0.6, vy=sy+(ey-sy)*0.6;
-  g+='<circle cx="'+ex+'" cy="'+ey+'" r="12" fill="none" stroke="#1B1612" stroke-width="2" vector-effect="non-scaling-stroke"/>';
-  g+='<path d="M'+ux.toFixed(1)+','+uy.toFixed(1)+' L'+vx.toFixed(1)+','+vy.toFixed(1)+
-     '" fill="none" stroke="#1B1612" stroke-width="17" stroke-linecap="butt"/></g>';
-  return g;
+  return g+rotule(sx,sy,8)+rotule(ex,ey,7)+rotule(hx,hy,5.5);
 }
-/* Le bras au repos, commun aux paliers 1 et 2. Il descend le long du torse a
-   une dizaine d-unites du bord, et son crochet rentre vers le corps. Ecarte du
-   chassis et le crochet tourne vers l-exterieur, il se lisait comme un cable
-   arrache plutot que comme un bras au repos. */
+/* Le bras au repos : il descend le long du torse, le crochet rentre vers le
+   corps — ecarte et tourne vers l'exterieur, il lisait comme un cable arrache. */
 var BRAS_REPOS = bras(-58,12,-58,54,-50,96,"M-50,96 q11,7 9,22");
-
 /* son miroir, a droite, pour les poses ou c'est le bras gauche qui travaille */
 var BRAS_REPOS_D = bras(58,12,58,54,50,96,"M50,96 q-11,7 -9,22");
-var TRAIT='fill="none" stroke="#1B1612" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
 
 var POSES = [
   /* 0 — Documents : un bras leve tenant un feuillet, l'autre au repos.
@@ -1104,7 +1082,7 @@ var POSES = [
      bord et la prise se lit. Il porte un bloc de titre, des lignes et une
      signature — c'est un devis ou un contrat, pas une page blanche. */
   BRAS_REPOS +
-  '<path d="M70,-172 h56 v82 h-56 Z" class="rFill" '+K+'/>'+
+  piece("M70,-172 h56 v82 h-56 Z")+
   '<g '+TRAIT+'><path d="M80,-160 h20 M80,-144 h36 M80,-134 h36 M80,-124 h22"/>'+
   '<path d="M96,-106 q5,-9 9,0 q4,8 9,-2" stroke-width="2"/></g>'+
   '<rect x="104" y="-163" width="12" height="7" fill="#1B1612"/>'+
@@ -1113,7 +1091,7 @@ var POSES = [
   /* 1 — Reporting : le bras gauche leve tient un tableau, courbe et barres ;
      le droit au repos. Tableau pose avant le bras, meme raison. */
   BRAS_REPOS_D +
-  '<path d="M-166,-178 h90 v86 h-90 Z" class="rFill" '+K+'/>'+
+  piece("M-166,-178 h90 v86 h-90 Z")+
   '<g '+TRAIT+'><path d="M-156,-104 h70 M-156,-104 v-62"/>'+
   '<path d="M-146,-110 v-12 M-134,-110 v-22 M-122,-110 v-16 M-110,-110 v-30 M-98,-110 v-40"/>'+
   '<path d="M-150,-140 L-134,-150 L-118,-144 L-96,-166" stroke-width="2"/></g>'+
@@ -1123,7 +1101,7 @@ var POSES = [
   /* 2 — Rappels : le bras leve agite une cloche, deux traits de vibration de
      chaque cote ; l'autre bras au repos. Cloche avant le bras. */
   BRAS_REPOS +
-  '<path d="M128,-102 C128,-128 134,-142 146,-142 C158,-142 164,-128 164,-102 L171,-95 L121,-95 Z" class="rFill" '+K+'/>'+
+  piece("M128,-102 C128,-128 134,-142 146,-142 C158,-142 164,-128 164,-102 L171,-95 L121,-95 Z")+
   '<path d="M141,-142 a5,5 0 0 1 10,0" '+TRAIT+'/>'+
   '<circle cx="146" cy="-87" r="5" fill="#1B1612"/>'+
   '<g '+TRAIT+'><path d="M114,-134 l-9,-5 M112,-120 h-11 M178,-134 l9,-5 M180,-120 h11"/></g>'+
@@ -1133,7 +1111,7 @@ var POSES = [
      l'exterieur — l'accueil. Une bulle de reponse au-dessus de la main droite. */
   bras(-58,10,-102,22,-146,10,"M-146,10 q-16,-3 -17,-19") +
   bras(58,10,102,22,146,10,"M146,10 q16,-3 17,-19") +
-  '<path d="M132,-78 h58 v34 h-34 l-12,12 v-12 h-12 Z" class="rFill" '+K+'/>'+
+  piece("M132,-78 h58 v34 h-34 l-12,12 v-12 h-12 Z")+
   '<g fill="#1B1612"><circle cx="148" cy="-61" r="3.5"/><circle cx="161" cy="-61" r="3.5"/><circle cx="174" cy="-61" r="3.5"/></g>',
 
   /* 4 — Emails : les deux bras bas et rentres en entonnoir, crochets tournes
