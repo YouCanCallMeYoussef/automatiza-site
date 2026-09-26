@@ -239,11 +239,14 @@ footer .brand .wm{font-size:20px}
 
 /* ---------- l'equipe : le premier ecran ----------
    Avant les paliers, l'idee d'ensemble : ces agents travaillent pour
-   l'entreprise comme ses employes, chacun a son poste. Le registre est celui du
-   badge nominatif — une photo sur plaque de couleur, un matricule, un poste —
-   parce que c'est l'objet qui dit « quelqu'un travaille ici » sans un mot. Le
-   robot porte le lavis de sa plaque et aucune tache de lavis n'est posee
-   derriere lui : meme encre sur meme encre, il s'y dissoudrait. */
+   l'entreprise comme ses employes. Les quatre sont dans UNE seule scene — un
+   mur, un poste de travail partage, un sol — parce que c'est une equipe et
+   non quatre produits : separes en cartes, ils se lisaient comme un
+   catalogue. Chacun porte la couleur de son palier, et un seul mot, sur la
+   plaque du bureau devant lui, dit son poste.
+   La scene est dessinee par le script, en deux compositions : quatre de
+   front en largeur, deux rangees de deux sur telephone, ou quatre de front
+   feraient des robots de quatre-vingt-dix pixels. */
 #equipe{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
 #equipe .wrap{flex:1;width:100%;display:flex;flex-direction:column;
   padding-block:clamp(20px,4vh,44px) var(--s-xl)}
@@ -251,35 +254,21 @@ footer .brand .wm{font-size:20px}
   line-height:.94;letter-spacing:-.04em;font-variation-settings:'wght' 900,'wdth' 108;
   text-wrap:balance;margin:var(--s-lg) 0 0;max-width:15em}
 .eq-intro{margin-top:var(--s-md);max-width:var(--mesure)}
-.equipe{list-style:none;margin:var(--s-lg) 0 0;padding:0;display:grid;gap:var(--s-md);
-  grid-template-columns:repeat(4,1fr)}
-@media (max-width:900px){.equipe{grid-template-columns:repeat(2,1fr)}}
-.agent{display:flex;flex-direction:column;background:var(--ink);color:var(--surface)}
-.agent .plaque{position:relative;aspect-ratio:6/5;overflow:hidden}
-@media (max-width:900px){.agent .plaque{aspect-ratio:1/1}}
-.agent .plaque .num{position:absolute;inset-inline-start:var(--s-sm);top:var(--s-sm);color:var(--ink)}
-.agent .robot{position:absolute;left:50%;bottom:-4%;width:min(78%,calc(100% * 5/6 * .82));
-  transform:translateX(-50%) rotate(var(--rot,0deg));transform-origin:50% 100%}
-.agent .robot svg{display:block;width:100%;height:auto;overflow:visible}
-.agent .badge{padding:var(--s-md);display:flex;flex-direction:column;gap:var(--s-xs);flex:1}
-.agent .poste{font-family:var(--display);font-weight:900;font-size:clamp(16px,1.7vw,20px);
-  line-height:1.15;letter-spacing:-.015em}
-.agent .tache{color:#CFC6B7}
-.agent .statut{margin-top:auto;padding-top:var(--s-sm);display:flex;align-items:center;gap:var(--s-sm);color:#CFC6B7}
-.agent .statut:before{content:"";width:8px;height:8px;border-radius:var(--r-full);background:var(--plate-emails)}
-@media (max-width:540px){
-  .agent .badge{padding:var(--s-sm)}
-  .agent .tache{display:none}
-}
-/* Le pilote balaie la visiere : le seul signe de vie. Decale d'un badge a
+.bureau{margin:var(--s-lg) 0 0}
+.bureau > div > svg{display:block;width:100%;height:auto}
+.scene-etroite{display:none}
+@media (max-width:700px){.scene-large{display:none}.scene-etroite{display:block}}
+.bureau .mot-poste{font-family:var(--display);font-weight:900;font-size:26px;fill:#F4F0E7;
+  letter-spacing:.06em;text-transform:uppercase;font-variation-settings:'wght' 900,'wdth' 100}
+/* Le pilote balaie la visiere : le seul signe de vie. Decale d'un robot a
    l'autre pour que les quatre ne battent pas a l'unisson comme une
    animation de chargement. */
-.agent .pilote{animation:balaye 3.4s ease-in-out infinite alternate}
-.agent:nth-child(2) .pilote{animation-delay:-1.1s}
-.agent:nth-child(3) .pilote{animation-delay:-2.3s}
-.agent:nth-child(4) .pilote{animation-delay:-.6s}
+.bureau .pilote{animation:balaye 3.4s ease-in-out infinite alternate}
+.bureau .r2 .pilote{animation-delay:-1.1s}
+.bureau .r3 .pilote{animation-delay:-2.3s}
+.bureau .r4 .pilote{animation-delay:-.6s}
 @keyframes balaye{from{transform:translateX(-16px)}to{transform:translateX(16px)}}
-@media (prefers-reduced-motion:reduce){.agent .pilote{animation:none}}
+@media (prefers-reduced-motion:reduce){.bureau .pilote{animation:none}}
 
 /* ---------- page ---------- */
 .wrap{padding-inline:clamp(16px,3.4vw,48px);padding-block:var(--s-xxl);max-width:1280px;margin:0 auto}
@@ -459,56 +448,23 @@ footer .langues a{text-decoration:none}
       <p data-i18n="eq.intro" class="body-lg eq-intro">Automatiza installe des agents IA qui travaillent pour votre
         entreprise comme vos employés : chacun a son poste, ses outils et ses tâches. Vos équipes
         gardent les décisions ; eux prennent la ressaisie. Dubaï et à distance.</p>
-      <ul class="equipe">
-        <li class="agent">
-          <div class="plaque" style="background:var(--plate-documents)">
-            <span class="num etape-num">AZ-01</span>
-            <div class="robot" data-pose="0" data-wash="#FAEFDA" style="--rot:-4deg" aria-hidden="true"></div>
-          </div>
-          <div class="badge">
-            <span data-i18n="eq.l1" class="label-caps">Documents</span>
-            <span data-i18n="eq.p1" class="poste">Rédige devis, contrats et rapports</span>
-            <span data-i18n="eq.t1" class="tache body-sm">Et remet vos tableurs à jour.</span>
-            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
-          </div>
-        </li>
-        <li class="agent">
-          <div class="plaque" style="background:var(--plate-agents)">
-            <span class="num etape-num">AZ-02</span>
-            <div class="robot" data-pose="1" data-wash="#E1F0F9" style="--rot:3deg" aria-hidden="true"></div>
-          </div>
-          <div class="badge">
-            <span data-i18n="eq.l2" class="label-caps">Reporting</span>
-            <span data-i18n="eq.p2" class="poste">Tient vos tableaux de bord à jour</span>
-            <span data-i18n="eq.t2" class="tache body-sm">Chaque matin, sans ressaisie.</span>
-            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
-          </div>
-        </li>
-        <li class="agent">
-          <div class="plaque" style="background:var(--plate-publicite)">
-            <span class="num etape-num">AZ-03</span>
-            <div class="robot" data-pose="2" data-wash="#FEE8E1" style="--rot:-3deg" aria-hidden="true"></div>
-          </div>
-          <div class="badge">
-            <span data-i18n="eq.l3" class="label-caps">Rappels</span>
-            <span data-i18n="eq.p3" class="poste">Prévient l'équipe au bon moment</span>
-            <span data-i18n="eq.t3" class="tache body-sm">Échéances, renouvellements, relances.</span>
-            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
-          </div>
-        </li>
-        <li class="agent">
-          <div class="plaque" style="background:var(--plate-prospects)">
-            <span class="num etape-num">AZ-04</span>
-            <div class="robot" data-pose="3" data-wash="#ECE8FA" style="--rot:4deg" aria-hidden="true"></div>
-          </div>
-          <div class="badge">
-            <span data-i18n="eq.l4" class="label-caps">Prospects</span>
-            <span data-i18n="eq.p4" class="poste">Qualifie et relance chaque demande</span>
-            <span data-i18n="eq.t4" class="tache body-sm">Et l'inscrit au CRM.</span>
-            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
-          </div>
-        </li>
-      </ul>
+      <!-- Les quatre postes sont ecrits ici, et nulle part ailleurs : le script
+           les lit dans cette liste (traduite comme le reste) pour les graver sur
+           les plaques de la scene. La liste est masquee a l'ecran mais lue par
+           les lecteurs d'ecran, et la scene, purement decorative, est cachee. -->
+      <figure class="bureau">
+        <div class="scene-large" aria-hidden="true"></div>
+        <div class="scene-etroite" aria-hidden="true"></div>
+        <figcaption class="vh">
+          <span data-i18n="eq.scene">Quatre agents au travail dans le même bureau :</span>
+          <ul class="postes">
+            <li data-i18n="eq.r1">Rédacteur</li>
+            <li data-i18n="eq.r2">Analyste</li>
+            <li data-i18n="eq.r3">Coordinateur</li>
+            <li data-i18n="eq.r4">Commercial</li>
+          </ul>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
@@ -1549,23 +1505,135 @@ if(!reduce && hasGsap){
 }
 
 /* ============================================================
-   L'EQUIPE — le premier ecran. Chaque badge recoit RECTO dans une seule
-   pose, a l'encre de sa plaque. Hors de la branche animee : l'equipe est la
-   meme pour tout le monde, mouvement reduit compris.
+   L'EQUIPE — le premier ecran : un bureau, quatre agents.
+   Hors de la branche animee : la scene est la meme pour tout le monde,
+   mouvement reduit compris. Ordre de dessin : le mur et ce qui y est
+   accroche, puis les robots, puis le bureau — qui passe DEVANT eux et
+   cache leur base : ils sont a leur poste, pas poses sur une etagere.
    ============================================================ */
 (function(){
   var eb=document.getElementById("brandEquipe");
   eb.innerHTML=brandHTML();
   var ef=eb.querySelectorAll(".rFill");
   for(var i=0;i<ef.length;i++) ef[i].setAttribute("fill","#F4F0E7");
-  var robots=document.querySelectorAll("#equipe .robot");
-  for(var r=0;r<robots.length;r++){
-    var box=robots[r], pose=+box.getAttribute("data-pose"), w=box.getAttribute("data-wash");
-    box.innerHTML=rectoSVG();
-    var fills=box.querySelectorAll(".rFill");
-    for(var k=0;k<fills.length;k++) fills[k].setAttribute("fill",w);
-    var ps=box.querySelectorAll(".pose");
-    for(var k2=0;k2<ps.length;k2++) if(k2!==pose) ps[k2].parentNode.removeChild(ps[k2]);
+
+  var INK="#1B1612", MUR="#E9E1D2", SOL="#D4CBBB", FACADE="#C9BDA8", PAPIER="#F4F0E7";
+  var TR='stroke="'+INK+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+  /* un agent par palier : pose, encre, legere inclinaison */
+  var AGENTS=[
+    { pose:0, encre:"#F1BB57", rot:-3 },
+    { pose:1, encre:"#49A7D2", rot:2 },
+    { pose:2, encre:"#E86B49", rot:-2 },
+    { pose:3, encre:"#9C8FDB", rot:3 }
+  ];
+  var li=document.querySelectorAll(".bureau .postes li"), MOTS=[];
+  for(var m=0;m<li.length;m++) MOTS.push(li[m].textContent.trim());
+
+  function horloge(x,y,r){
+    return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+PAPIER+'" '+TR+'/>'+
+      '<path d="M'+x+','+(y-r+8)+'v8M'+(x+r-8)+','+y+'h-8M'+x+','+(y+r-8)+'v-8M'+(x-r+8)+','+y+'h8" '+TR+'/>'+
+      /* dix heures dix — et les aiguilles ne s'arretent pas pour autant */
+      '<path d="M'+x+','+y+'L'+(x-r*.42)+','+(y-r*.22)+'M'+x+','+y+'L'+(x+r*.5)+','+(y-r*.45)+'" '+TR+'/>'+
+      '<circle cx="'+x+'" cy="'+y+'" r="4" fill="'+INK+'"/>';
+  }
+  /* Fenetre sur Dubai : ciel au lavis bleu, silhouette au trait, la tour la
+     plus haute en gradins jusqu'a l'aiguille. */
+  function fenetre(x,y,w,h){
+    var b=y+h, g='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#E1F0F9" '+TR+'/>';
+    g+='<circle cx="'+(x+w*.8)+'" cy="'+(y+h*.28)+'" r="'+(h*.1)+'" fill="#F1BB57"/>';
+    var tours=[[.04,.13,.34],[.19,.10,.52],[.31,.08,.28],[.60,.12,.44],[.74,.09,.6],[.85,.11,.3]];
+    for(var t=0;t<tours.length;t++)
+      g+='<rect x="'+(x+w*tours[t][0])+'" y="'+(b-h*tours[t][2])+'" width="'+(w*tours[t][1])+'" height="'+(h*tours[t][2])+'" fill="'+PAPIER+'" stroke="'+INK+'" stroke-width="2"/>';
+    var c=x+w*.475, u=w*.012;
+    g+='<path d="M'+(c-5*u)+','+b+'V'+(b-h*.42)+'H'+(c-3*u)+'V'+(b-h*.62)+'H'+(c-u)+'V'+(b-h*.8)+
+       'L'+c+','+(y+h*.06)+'L'+(c+u)+','+(b-h*.8)+'V'+(b-h*.62)+'H'+(c+3*u)+'V'+(b-h*.42)+'H'+(c+5*u)+'V'+b+'Z" fill="'+PAPIER+'" stroke="'+INK+'" stroke-width="2"/>';
+    g+='<path d="M'+(x+w/2)+','+y+'V'+b+'" '+TR+'/>';
+    return g+'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="none" '+TR+'/>';
+  }
+  /* Le tableau des taches, commun aux quatre : trois colonnes, et des
+     fiches aux couleurs des agents qui passent de l'une a l'autre. C'est la
+     que se voit le travail d'equipe. */
+  function tableau(x,y,w,h){
+    var g='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+PAPIER+'" '+TR+'/>';
+    var cw=w/3;
+    g+='<path d="M'+(x+cw)+','+(y+10)+'V'+(y+h-10)+'M'+(x+2*cw)+','+(y+10)+'V'+(y+h-10)+'" stroke="'+INK+'" stroke-width="2"/>';
+    var fiches=[[0,0,"#F1BB57"],[0,1,"#E86B49"],[1,0,"#49A7D2"],[1,1,"#9C8FDB"],[1,2,"#F1BB57"],[2,0,"#E86B49"],[2,1,"#49A7D2"],[2,2,"#9C8FDB"],[0,2,"#49A7D2"]];
+    var fw=cw-24, fh=Math.min(22,(h-48)/3-8);
+    for(var f=0;f<fiches.length;f++)
+      g+='<rect x="'+(x+fiches[f][0]*cw+12)+'" y="'+(y+18+fiches[f][1]*(fh+10))+'" width="'+fw+'" height="'+fh+'" fill="'+fiches[f][2]+'" stroke="'+INK+'" stroke-width="2"/>';
+    return g;
+  }
+  function plante(x,y){
+    return '<path d="M'+x+','+(y-26)+'C'+(x-4)+','+(y-58)+' '+(x-30)+','+(y-66)+' '+(x-34)+','+(y-70)+'C'+(x-24)+','+(y-44)+' '+(x-10)+','+(y-38)+' '+x+','+(y-26)+
+      'C'+(x+6)+','+(y-60)+' '+(x+26)+','+(y-76)+' '+(x+32)+','+(y-80)+'C'+(x+28)+','+(y-50)+' '+(x+14)+','+(y-36)+' '+x+','+(y-26)+'" fill="#6BBEA5" '+TR+'/>'+
+      '<path d="M'+(x-20)+','+(y-28)+'H'+(x+20)+'L'+(x+15)+','+y+'H'+(x-15)+'Z" fill="'+FACADE+'" '+TR+'/>';
+  }
+  function tasse(x,y){
+    return '<path d="M'+(x-14)+','+(y-30)+'H'+(x+14)+'V'+y+'H'+(x-14)+'Z" fill="'+PAPIER+'" '+TR+'/>'+
+      '<path d="M'+(x+14)+','+(y-24)+'q12,0 12,9t-12,9" fill="none" '+TR+'/>'+
+      '<path d="M'+(x-5)+','+(y-38)+'q-5,-8 0,-16M'+(x+5)+','+(y-38)+'q-5,-8 0,-16" fill="none" stroke="'+INK+'" stroke-width="2" stroke-linecap="round"/>';
+  }
+  function portable(x,y){
+    return '<path d="M'+(x-32)+','+(y-46)+'H'+(x+32)+'V'+(y-6)+'H'+(x-32)+'Z" fill="'+INK+'"/>'+
+      '<path d="M'+(x-24)+','+(y-36)+'h30M'+(x-24)+','+(y-26)+'h44M'+(x-24)+','+(y-16)+'h20" stroke="#49A7D2" stroke-width="3" stroke-linecap="round"/>'+
+      '<path d="M'+(x-42)+','+(y-6)+'H'+(x+42)+'L'+(x+38)+','+y+'H'+(x-38)+'Z" fill="'+PAPIER+'" '+TR+'/>';
+  }
+  function robot(a,i,cx,o){
+    var svg=rectoSVG().replace('<svg viewBox','<svg x="'+(cx-200)+'" y="'+(o-210)+'" width="400" height="410" overflow="visible" viewBox');
+    return '<g class="r'+(i+1)+'" data-pose="'+a.pose+'" data-encre="'+a.encre+'" transform="rotate('+a.rot+' '+cx+' '+(o+100)+')">'+svg+'</g>';
+  }
+  function corps(cols,PW){
+    var n=1; for(var i=0;i<MOTS.length;i++) n=Math.max(n,MOTS[i].length);
+    return Math.min(cols===4?26:38, (PW-56)/(n*0.9));
+  }
+  /* cols = 4 : une rangee ; cols = 2 : deux rangees, la seconde devant */
+  function scene(cols){
+    /* le plateau coupe les robots sous le cadran de poitrine : on voit le
+       torse, pas une tete qui depasse. ECART garde les accessoires de la
+       seconde rangee sous la facade de la premiere. */
+    var W=cols*400, rangs=4/cols, ECART=390, O=400;
+    var dessus=function(r){ return O+r*ECART+100; };
+    var H=dessus(rangs-1)+130;
+    var g='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+    g+='<rect width="'+W+'" height="'+dessus(0)+'" fill="'+MUR+'"/>';
+    g+='<rect y="'+dessus(0)+'" width="'+W+'" height="'+(H-dessus(0))+'" fill="'+SOL+'"/>';
+    if(cols===4){ g+=horloge(110,116,52)+fenetre(640,36,320,160)+tableau(1240,36,300,160); }
+    else        { g+=horloge(80,104,44)+fenetre(240,36,320,150)+tableau(610,36,170,150); }
+    var objets=[plante,tasse,portable], n=0;
+    for(var r=0;r<rangs;r++){
+      var o=O+r*ECART, d=dessus(r);
+      for(var c=0;c<cols;c++){ var i=r*cols+c; g+=robot(AGENTS[i],i,200+c*400,o); }
+      /* le bureau : plateau, facade, et une plaque par agent */
+      g+='<rect x="20" y="'+d+'" width="'+(W-40)+'" height="16" fill="'+PAPIER+'" '+TR+'/>';
+      g+='<rect x="40" y="'+(d+16)+'" width="'+(W-80)+'" height="84" fill="'+FACADE+'" '+TR+'/>';
+      for(var c2=0;c2<cols-1;c2++){ g+=objets[n%3](400+c2*400,d); n++; }
+      for(var c3=0;c3<cols;c3++){
+        var k=r*cols+c3, x=200+c3*400;
+        /* Meme corps sur les quatre plaques, regle sur le mot le plus long :
+           « Coordinateur » doit tenir, et quatre tailles differentes feraient
+           quatre marques au lieu d'une equipe. 0,9 em par capitale grasse,
+           espacement compris. Sur telephone la scene est reduite de moitie :
+           plaques et lettres y sont plus grandes pour rester lisibles. */
+        var PW=cols===4?280:330, PH=cols===4?48:64, mot=MOTS[k]||"";
+        g+='<rect x="'+(x-PW/2)+'" y="'+(d+34)+'" width="'+PW+'" height="'+PH+'" fill="'+INK+'"/>'+
+           '<rect x="'+(x-PW/2+8)+'" y="'+(d+44)+'" width="6" height="'+(PH-20)+'" fill="'+AGENTS[k].encre+'"/>'+
+           '<text class="mot-poste" x="'+x+'" y="'+(d+34+PH/2)+'" dominant-baseline="central" text-anchor="middle" style="font-size:'+corps(cols,PW).toFixed(1)+'px">'+mot+'</text>';
+      }
+    }
+    return g+'</svg>';
+  }
+  var cibles=[[".scene-large",4],[".scene-etroite",2]];
+  for(var s=0;s<cibles.length;s++){
+    var box=document.querySelector(cibles[s][0]);
+    box.innerHTML=scene(cibles[s][1]);
+    var rs=box.querySelectorAll("[data-pose]");
+    for(var q=0;q<rs.length;q++){
+      var pose=+rs[q].getAttribute("data-pose"), encre=rs[q].getAttribute("data-encre");
+      var fills=rs[q].querySelectorAll(".rFill");
+      for(var k=0;k<fills.length;k++) fills[k].setAttribute("fill",encre);
+      var ps=rs[q].querySelectorAll(".pose");
+      for(var k2=0;k2<ps.length;k2++) if(k2!==pose) ps[k2].parentNode.removeChild(ps[k2]);
+    }
   }
 })();
 

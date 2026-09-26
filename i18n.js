@@ -21,11 +21,8 @@ en: {
 
   "eq.titre": "Colleagues who never watch the clock.",
   "eq.intro": "Automatiza sets up AI agents that work for your company the way your employees do: each one has a role, tools and tasks. Your teams keep the decisions; the agents take the re-typing. Dubai and remote.",
-  "eq.l1": "Documents", "eq.p1": "Drafts quotes, contracts and reports", "eq.t1": "And keeps your spreadsheets up to date.",
-  "eq.l2": "Reporting", "eq.p2": "Keeps your dashboards up to date", "eq.t2": "Every morning, no re-typing.",
-  "eq.l3": "Reminders", "eq.p3": "Alerts the team at the right time", "eq.t3": "Deadlines, renewals, follow-ups.",
-  "eq.l4": "Leads", "eq.p4": "Qualifies and follows up every enquiry", "eq.t4": "And logs it in the CRM.",
-  "eq.statut": "On duty",
+  "eq.scene": "Four agents at work in the same office:",
+  "eq.r1": "Writer", "eq.r2": "Analyst", "eq.r3": "Coordinator", "eq.r4": "Sales",
 
   "hero.aria": "What Automatiza automates",
   "hint": "<span>↓</span><span>Scroll</span>",
@@ -111,11 +108,8 @@ ar: {
 
   "eq.titre": "زملاء لا ينظرون إلى الساعة.",
   "eq.intro": "تُطلق Automatiza وكلاء ذكاء اصطناعي يعملون لشركتك كما يعمل موظفوك: لكلٍّ منهم دوره وأدواته ومهامه. يحتفظ فريقك بالقرارات، ويتولّى الوكلاء إعادة الإدخال. في دبي وعن بُعد.",
-  "eq.l1": "المستندات", "eq.p1": "يُعِدّ عروض الأسعار والعقود والتقارير", "eq.t1": "ويُحدّث جداول البيانات لديك.",
-  "eq.l2": "التقارير", "eq.p2": "يُبقي لوحات المتابعة محدَّثة", "eq.t2": "كل صباح، دون إعادة إدخال.",
-  "eq.l3": "التذكيرات", "eq.p3": "يُنبّه الفريق في الوقت المناسب", "eq.t3": "المواعيد النهائية، التجديدات، المتابعات.",
-  "eq.l4": "العملاء المحتملون", "eq.p4": "يُصنّف كل طلب ويتابعه", "eq.t4": "ويُسجّله في نظام إدارة العملاء.",
-  "eq.statut": "في الخدمة",
+  "eq.scene": "أربعة وكلاء يعملون في المكتب نفسه:",
+  "eq.r1": "محرِّر", "eq.r2": "محلِّل", "eq.r3": "منسِّق", "eq.r4": "مبيعات",
 
   "hero.aria": "ما تؤتمته Automatiza",
   "hint": "<span>↓</span><span>مرِّر للأسفل</span>",
