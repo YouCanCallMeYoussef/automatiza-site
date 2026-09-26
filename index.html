@@ -42,7 +42,30 @@
 <meta property="og:image:alt" content="Plaque bleue « Agents IA » : le logotype Automatiza, la fiche technique du palier et RECTO, le robot dessiné au trait.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap">
+<!-- LANGUE — choisie ICI, avant le premier rendu, pour que la page ne
+     s'affiche pas en francais une fraction de seconde avant de basculer.
+     Ordre : 1) ?lang= dans l'adresse (le selecteur FR·EN·AR ecrit ce lien, et
+     le choix est retenu) ; 2) un choix retenu d'une visite precedente ;
+     3) la langue du navigateur, qui suit les reglages regionaux du visiteur ;
+     4) l'anglais, langue commune a Dubai. Pas de geolocalisation par adresse
+     IP : elle demanderait un service tiers, que confidentialite.html
+     devrait alors declarer. La page reste masquee au plus 1,5 s si la
+     traduction tarde : mieux vaut du francais que rien. -->
+<script>
+(function(){
+  var L=["fr","en","ar"], l=null, h=document.documentElement;
+  try{ var q=new URLSearchParams(location.search).get("lang");
+       if(L.indexOf(q)>-1){ l=q; localStorage.setItem("az-lang",q); } }catch(e){}
+  if(!l){ try{ var m=localStorage.getItem("az-lang"); if(L.indexOf(m)>-1) l=m; }catch(e){} }
+  if(!l){ var n=navigator.languages||[navigator.language||""];
+          for(var i=0;i<n.length&&!l;i++){ var c=String(n[i]).slice(0,2).toLowerCase(); if(L.indexOf(c)>-1) l=c; } }
+  l=l||"en";
+  h.lang=l; h.dir=(l==="ar"?"rtl":"ltr");
+  if(l!=="fr"){ h.classList.add("i18n-attente");
+    setTimeout(function(){ h.classList.remove("i18n-attente"); },1500); }
+})();
+</script>
 <style>
 :root{
   --surface:#F4F0E7; --neutral:#E9E1D2; --border:#D4CBBB;
@@ -234,7 +257,7 @@ footer .brand .wm{font-size:20px}
 .agent{display:flex;flex-direction:column;background:var(--ink);color:var(--surface)}
 .agent .plaque{position:relative;aspect-ratio:6/5;overflow:hidden}
 @media (max-width:900px){.agent .plaque{aspect-ratio:1/1}}
-.agent .plaque .num{position:absolute;left:var(--s-sm);top:var(--s-sm);color:var(--ink)}
+.agent .plaque .num{position:absolute;inset-inline-start:var(--s-sm);top:var(--s-sm);color:var(--ink)}
 .agent .robot{position:absolute;left:50%;bottom:-4%;width:min(78%,calc(100% * 5/6 * .82));
   transform:translateX(-50%) rotate(var(--rot,0deg));transform-origin:50% 100%}
 .agent .robot svg{display:block;width:100%;height:auto;overflow:visible}
@@ -274,10 +297,10 @@ footer .brand .wm{font-size:20px}
    cinq options au meme rang, ce qu'ils ne sont pas. Ce sont les questions de
    la FAQ qui se comparent, pas les etapes qui se suivent. */
 ol.etapes{list-style:none;margin:0;padding:0;position:relative}
-ol.etapes:before{content:"";position:absolute;left:13px;top:14px;bottom:14px;width:1px;background:var(--border)}
-ol.etapes li{position:relative;padding-left:var(--s-xl);padding-bottom:var(--s-xl)}
+ol.etapes:before{content:"";position:absolute;inset-inline-start:13px;top:14px;bottom:14px;width:1px;background:var(--border)}
+ol.etapes li{position:relative;padding-inline-start:var(--s-xl);padding-bottom:var(--s-xl)}
 ol.etapes li:last-child{padding-bottom:0}
-.dot{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:var(--r-full);
+.dot{position:absolute;inset-inline-start:0;top:0;width:28px;height:28px;border-radius:var(--r-full);
   background:var(--prusse);color:var(--surface);display:flex;align-items:center;justify-content:center}
 
 /* Les services en cartes. Empiles, les quatre problemes se lisaient comme une
@@ -383,9 +406,39 @@ footer a:hover{color:var(--ink)}
 footer .brand:hover{color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- langues ---------- */
+html.i18n-attente body{visibility:hidden}
+.eq-top{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-md)}
+.eq-top .brand{margin-bottom:0}
+.langues{display:flex;gap:var(--s-md);align-items:center}
+.langues a{color:var(--maigre);text-decoration:none;padding:var(--s-xs) 0;border-bottom:1px solid transparent}
+.langues a:hover{color:var(--ink)}
+.langues a[aria-current]{color:var(--ink);border-bottom-color:var(--ink)}
+.langues a[lang=ar]{font-family:"IBM Plex Sans Arabic",sans-serif;letter-spacing:0;font-size:14px}
+footer .langues{margin-top:var(--s-md)}
+footer .langues a{text-decoration:none}
+
+/* Arabe. Archivo n'a pas de glyphes arabes : IBM Plex Sans Arabic prend le
+   relais, de la meme famille que la mono du systeme. L'approche serree et
+   les capitales n'ont pas de sens en arabe — l'espacement negatif casse
+   meme les liaisons entre lettres — donc tout revient a zero. */
+:root[lang=ar]{--display:"IBM Plex Sans Arabic",Archivo,Arial,sans-serif;
+  /* jamais de repli « monospace » : une chasse fixe etire les lettres arabes */
+  --mono:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif}
+:root[lang=ar] body *{letter-spacing:0!important;text-transform:none!important}
+:root[lang=ar] .display-palier{line-height:1.25;font-weight:700}
+:root[lang=ar] .eq-titre{line-height:1.2}
+:root[lang=ar] .headline-lg,:root[lang=ar] .headline-md{line-height:1.4}
+/* La composition du heros reste celle du dessin : robot, lavis, marques et mot
+   geant gardent leurs places, calculees pour une lecture de gauche a droite.
+   Seul le texte des colonnes passe de droite a gauche. */
+[dir=rtl] .stage{direction:ltr}
+[dir=rtl] .hud-left,[dir=rtl] #fiche,[dir=rtl] .p-fiche,[dir=rtl] .p-accroche{direction:rtl;text-align:right}
+[dir=rtl] #scrollHint{direction:rtl}
 </style>
 
-<a class="skip label-action" href="#how">Aller au contenu</a>
+<a data-i18n="skip" class="skip label-action" href="#how">Aller au contenu</a>
 
 <main id="main">
   <!-- Premier ecran : l'equipe. Il porte le vrai <h1>, visible — le mot geant
@@ -394,9 +447,16 @@ footer .brand:hover{color:var(--ink)}
        lisibles, seule la photo manque. -->
   <section id="equipe" aria-labelledby="eq-titre">
     <div class="wrap">
-      <div class="brand" id="brandEquipe"></div>
-      <h1 class="eq-titre" id="eq-titre">Des collaborateurs qui ne comptent pas leurs heures.</h1>
-      <p class="body-lg eq-intro">Automatiza installe des agents IA qui travaillent pour votre
+      <div class="eq-top">
+        <div class="brand" id="brandEquipe"></div>
+        <nav class="langues label-caps" data-i18n-aria="langues" aria-label="Langue">
+          <a href="?lang=fr" hreflang="fr" lang="fr">FR</a>
+          <a href="?lang=en" hreflang="en" lang="en">EN</a>
+          <a href="?lang=ar" hreflang="ar" lang="ar">عربي</a>
+        </nav>
+      </div>
+      <h1 data-i18n="eq.titre" class="eq-titre" id="eq-titre">Des collaborateurs qui ne comptent pas leurs heures.</h1>
+      <p data-i18n="eq.intro" class="body-lg eq-intro">Automatiza installe des agents IA qui travaillent pour votre
         entreprise comme vos employés : chacun a son poste, ses outils et ses tâches. Vos équipes
         gardent les décisions ; eux prennent la ressaisie. Dubaï et à distance.</p>
       <ul class="equipe">
@@ -406,10 +466,10 @@ footer .brand:hover{color:var(--ink)}
             <div class="robot" data-pose="0" data-wash="#FAEFDA" style="--rot:-4deg" aria-hidden="true"></div>
           </div>
           <div class="badge">
-            <span class="label-caps">Documents</span>
-            <span class="poste">Rédige devis, contrats et rapports</span>
-            <span class="tache body-sm">Et remet vos tableurs à jour.</span>
-            <span class="statut label-caps">En poste</span>
+            <span data-i18n="eq.l1" class="label-caps">Documents</span>
+            <span data-i18n="eq.p1" class="poste">Rédige devis, contrats et rapports</span>
+            <span data-i18n="eq.t1" class="tache body-sm">Et remet vos tableurs à jour.</span>
+            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
           </div>
         </li>
         <li class="agent">
@@ -418,10 +478,10 @@ footer .brand:hover{color:var(--ink)}
             <div class="robot" data-pose="1" data-wash="#E1F0F9" style="--rot:3deg" aria-hidden="true"></div>
           </div>
           <div class="badge">
-            <span class="label-caps">Reporting</span>
-            <span class="poste">Tient vos tableaux de bord à jour</span>
-            <span class="tache body-sm">Chaque matin, sans ressaisie.</span>
-            <span class="statut label-caps">En poste</span>
+            <span data-i18n="eq.l2" class="label-caps">Reporting</span>
+            <span data-i18n="eq.p2" class="poste">Tient vos tableaux de bord à jour</span>
+            <span data-i18n="eq.t2" class="tache body-sm">Chaque matin, sans ressaisie.</span>
+            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
           </div>
         </li>
         <li class="agent">
@@ -430,10 +490,10 @@ footer .brand:hover{color:var(--ink)}
             <div class="robot" data-pose="2" data-wash="#FEE8E1" style="--rot:-3deg" aria-hidden="true"></div>
           </div>
           <div class="badge">
-            <span class="label-caps">Rappels</span>
-            <span class="poste">Prévient l'équipe au bon moment</span>
-            <span class="tache body-sm">Échéances, renouvellements, relances.</span>
-            <span class="statut label-caps">En poste</span>
+            <span data-i18n="eq.l3" class="label-caps">Rappels</span>
+            <span data-i18n="eq.p3" class="poste">Prévient l'équipe au bon moment</span>
+            <span data-i18n="eq.t3" class="tache body-sm">Échéances, renouvellements, relances.</span>
+            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
           </div>
         </li>
         <li class="agent">
@@ -442,10 +502,10 @@ footer .brand:hover{color:var(--ink)}
             <div class="robot" data-pose="3" data-wash="#ECE8FA" style="--rot:4deg" aria-hidden="true"></div>
           </div>
           <div class="badge">
-            <span class="label-caps">Prospects</span>
-            <span class="poste">Qualifie et relance chaque demande</span>
-            <span class="tache body-sm">Et l'inscrit au CRM.</span>
-            <span class="statut label-caps">En poste</span>
+            <span data-i18n="eq.l4" class="label-caps">Prospects</span>
+            <span data-i18n="eq.p4" class="poste">Qualifie et relance chaque demande</span>
+            <span data-i18n="eq.t4" class="tache body-sm">Et l'inscrit au CRM.</span>
+            <span data-i18n="eq.statut" class="statut label-caps">En poste</span>
           </div>
         </li>
       </ul>
@@ -453,7 +513,7 @@ footer .brand:hover{color:var(--ink)}
   </section>
 
   <!-- heros epingle : devoile par JS quand le mouvement est autorise -->
-  <section id="hero" hidden aria-label="Ce qu'Automatiza automatise">
+  <section data-i18n-aria="hero.aria" id="hero" hidden aria-label="Ce qu'Automatiza automatise">
     <div class="stage">
       <div class="layer" id="blobWrap"><svg id="blob" viewBox="0 0 400 360" aria-hidden="true">
         <path id="blobPath" fill="var(--wash-documents)" stroke="var(--ink)" stroke-width="3"
@@ -468,7 +528,7 @@ footer .brand:hover{color:var(--ink)}
         </div>
         <div id="fiche"></div>
       </div>
-      <p class="spec-label" id="scrollHint"><span>↓</span><span>Faites défiler</span></p>
+      <p data-i18n="hint" class="spec-label" id="scrollHint"><span>↓</span><span>Faites défiler</span></p>
     </div>
   </section>
 
@@ -484,42 +544,42 @@ footer .brand:hover{color:var(--ink)}
        et la tabulation suivante repart du debut du document. -->
   <section id="how" tabindex="-1">
     <div class="wrap">
-      <span class="eyebrow label-caps">Comment ça marche</span>
-      <h2 class="headline-lg prose">On ne chiffre rien avant d'avoir fait l'audit.</h2>
-      <p class="body-lg prose" style="margin-top:var(--s-lg)">Un devis par projet, puis un forfait
+      <span data-i18n="how.eyebrow" class="eyebrow label-caps">Comment ça marche</span>
+      <h2 data-i18n="how.h2" class="headline-lg prose">On ne chiffre rien avant d'avoir fait l'audit.</h2>
+      <p data-i18n="how.p" class="body-lg prose" style="margin-top:var(--s-lg)">Un devis par projet, puis un forfait
         mensuel de suivi. Le premier se calcule après l'audit ; le second se justifie tous les mois.</p>
       <div class="sheet" style="margin-top:var(--s-xl)">
         <div class="sheet-head">
-          <div class="f"><span class="l spec-label">Référence</span><span class="spec-value">AZ-AUD-2026</span></div>
-          <div class="f"><span class="l spec-label">Durée d'audit</span><span class="spec-value">1 à 3 jours</span></div>
-          <div class="f"><span class="l spec-label">Livrable</span><span class="spec-value">Cahier des charges + devis</span></div>
-          <div class="f"><span class="l spec-label">Engagement</span><span class="spec-value">Aucun à ce stade</span></div>
+          <div class="f"><span data-i18n="sh.ref" class="l spec-label">Référence</span><span class="spec-value">AZ-AUD-2026</span></div>
+          <div class="f"><span data-i18n="sh.duree" class="l spec-label">Durée d'audit</span><span data-i18n="sh.duree.v" class="spec-value">1 à 3 jours</span></div>
+          <div class="f"><span data-i18n="sh.livrable" class="l spec-label">Livrable</span><span data-i18n="sh.livrable.v" class="spec-value">Cahier des charges + devis</span></div>
+          <div class="f"><span data-i18n="sh.engagement" class="l spec-label">Engagement</span><span data-i18n="sh.engagement.v" class="spec-value">Aucun à ce stade</span></div>
         </div>
         <ol class="etapes">
           <li><span class="dot etape-num">01</span>
-            <h3 class="headline-md">Audit des process</h3>
-            <p class="body-md prose" style="margin-top:var(--s-sm)">Nous regardons le travail réel :
+            <h3 data-i18n="e1.h" class="headline-md">Audit des process</h3>
+            <p data-i18n="e1.p" class="body-md prose" style="margin-top:var(--s-sm)">Nous regardons le travail réel :
               qui fait quoi, dans quel outil, combien de fois par jour. Sur site quand c'est
               possible, à distance sinon. C'est l'étape qui décide de tout le reste — un process
               qu'on n'a pas vu tourner ne se chiffre pas.</p></li>
           <li><span class="dot etape-num">02</span>
-            <h3 class="headline-md">Cahier des charges et devis</h3>
-            <p class="body-md prose" style="margin-top:var(--s-sm)">Ce qu'on automatise, ce qu'on
+            <h3 data-i18n="e2.h" class="headline-md">Cahier des charges et devis</h3>
+            <p data-i18n="e2.p" class="body-md prose" style="margin-top:var(--s-sm)">Ce qu'on automatise, ce qu'on
               laisse aux équipes, ce que ça coûte et ce que ça rapporte. Un périmètre écrit, chiffré,
               qui ne bouge plus sans avenant.</p></li>
           <li><span class="dot etape-num">03</span>
-            <h3 class="headline-md">Développement</h3>
-            <p class="body-md prose" style="margin-top:var(--s-sm)">Agents, orchestration,
+            <h3 data-i18n="e3.h" class="headline-md">Développement</h3>
+            <p data-i18n="e3.p" class="body-md prose" style="margin-top:var(--s-sm)">Agents, orchestration,
               intégrations à vos outils existants. Vous voyez tourner une première version bien avant
               la livraison.</p></li>
           <li><span class="dot etape-num">04</span>
-            <h3 class="headline-md">Livraison et formation</h3>
-            <p class="body-md prose" style="margin-top:var(--s-sm)">Mise en production et prise en
+            <h3 data-i18n="e4.h" class="headline-md">Livraison et formation</h3>
+            <p data-i18n="e4.p" class="body-md prose" style="margin-top:var(--s-sm)">Mise en production et prise en
               main par vos équipes. Un système que personne ne sait reprendre est un système que vous
               ne possédez pas.</p></li>
           <li><span class="dot etape-num">05</span>
-            <h3 class="headline-md">Suivi mensuel</h3>
-            <p class="body-md prose" style="margin-top:var(--s-sm)">Supervision, correctifs, une
+            <h3 data-i18n="e5.h" class="headline-md">Suivi mensuel</h3>
+            <p data-i18n="e5.p" class="body-md prose" style="margin-top:var(--s-sm)">Supervision, correctifs, une
               évolution mineure par mois et un point de mesure. Les modèles changent, vos process
               aussi : le forfait existe pour que le système suive.</p></li>
         </ol>
@@ -529,58 +589,58 @@ footer .brand:hover{color:var(--ink)}
 
   <section id="services">
     <div class="wrap">
-      <span class="eyebrow label-caps">Services</span>
-      <h2 class="headline-lg prose">Chaque automatisation part d'un problème qu'on vous a entendu décrire.</h2>
+      <span data-i18n="svc.eyebrow" class="eyebrow label-caps">Services</span>
+      <h2 data-i18n="svc.h2" class="headline-lg prose">Chaque automatisation part d'un problème qu'on vous a entendu décrire.</h2>
       <!-- tabindex sur la carte : la solution se decouvre au survol, et le
            clavier n-a pas de survol. Sans point d-arret ici, quatre reponses
            deviendraient invisibles pour qui navigue a la tabulation. -->
       <div class="svc-grid">
         <article class="svc" tabindex="0">
-          <span class="pb spec-label">Le problème</span>
-          <h3 class="headline-md prose">Le devis est retapé à la main, et le contrat recopie le devis.</h3>
-          <p class="sol body-md"><strong>Documents.</strong> Devis, contrats, rapports et tableurs
+          <span data-i18n="svc.pb" class="pb spec-label">Le problème</span>
+          <h3 data-i18n="s1.h" class="headline-md prose">Le devis est retapé à la main, et le contrat recopie le devis.</h3>
+          <p data-i18n="s1.sol" class="sol body-md"><strong>Documents.</strong> Devis, contrats, rapports et tableurs
             produits à partir de vos données, contrôlés et mis en forme à votre modèle. Les écarts
             remontent ; vous relisez et signez.</p>
         </article>
         <article class="svc" tabindex="0">
-          <span class="pb spec-label">Le problème</span>
-          <h3 class="headline-md prose">Le tableau de bord du lundi montre les chiffres du vendredi.</h3>
-          <p class="sol body-md"><strong>Tableaux de bord à jour.</strong> Les chiffres remontent
+          <span data-i18n="svc.pb" class="pb spec-label">Le problème</span>
+          <h3 data-i18n="s2.h" class="headline-md prose">Le tableau de bord du lundi montre les chiffres du vendredi.</h3>
+          <p data-i18n="s2.sol" class="sol body-md"><strong>Tableaux de bord à jour.</strong> Les chiffres remontent
             seuls de vos outils — ERP, CRM, tableurs — et le tableau se met à jour chaque matin, avec
             une alerte quand un indicateur décroche.</p>
         </article>
         <article class="svc" tabindex="0">
-          <span class="pb spec-label">Le problème</span>
-          <h3 class="headline-md prose">Une échéance ratée coûte plus cher que dix rappels.</h3>
-          <p class="sol body-md"><strong>Rappels intelligents.</strong> Échéances, renouvellements,
+          <span data-i18n="svc.pb" class="pb spec-label">Le problème</span>
+          <h3 data-i18n="s3.h" class="headline-md prose">Une échéance ratée coûte plus cher que dix rappels.</h3>
+          <p data-i18n="s3.sol" class="sol body-md"><strong>Rappels intelligents.</strong> Échéances, renouvellements,
             factures impayées, tâches en retard : l'agent prévient la bonne personne, par email,
             Teams ou WhatsApp, et relance tant que rien ne bouge.</p>
         </article>
         <article class="svc" tabindex="0">
-          <span class="pb spec-label">Le problème</span>
-          <h3 class="headline-md prose">Une demande entrante attend trois heures avant qu'on la lise.</h3>
-          <p class="sol body-md"><strong>Prospects et CRM.</strong> Un agent qualifie la demande,
+          <span data-i18n="svc.pb" class="pb spec-label">Le problème</span>
+          <h3 data-i18n="s4.h" class="headline-md prose">Une demande entrante attend trois heures avant qu'on la lise.</h3>
+          <p data-i18n="s4.sol" class="sol body-md"><strong>Prospects et CRM.</strong> Un agent qualifie la demande,
             l'inscrit au CRM, va chercher le contexte dans vos historiques et rédige la réponse — puis
             relance si le prospect se tait. Vos commerciaux arbitrent au lieu de saisir.</p>
         </article>
         <article class="svc" tabindex="0">
-          <span class="pb spec-label">Le problème</span>
-          <h3 class="headline-md prose">Le tri d'une boîte partagée coûte plus cher que les réponses.</h3>
-          <p class="sol body-md"><strong>Automatisation des emails.</strong> Tri, routage vers la
+          <span data-i18n="svc.pb" class="pb spec-label">Le problème</span>
+          <h3 data-i18n="s5.h" class="headline-md prose">Le tri d'une boîte partagée coûte plus cher que les réponses.</h3>
+          <p data-i18n="s5.sol" class="sol body-md"><strong>Automatisation des emails.</strong> Tri, routage vers la
             bonne personne, brouillons prêts à relire. Rien n'est envoyé sans validation tant que vous
             ne l'avez pas demandé.</p>
         </article>
       </div>
-      <p class="svc-more body-md prose">Cette liste n'est pas fermée. Un process répétitif, décrit
+      <p data-i18n="svc.more" class="svc-more body-md prose">Cette liste n'est pas fermée. Un process répétitif, décrit
         par écrit et mesurable, est un candidat — l'audit sert exactement à le vérifier.</p>
     </div>
   </section>
 
   <section id="contact">
     <div class="wrap">
-      <span class="eyebrow label-caps">Demander un audit</span>
-      <h2 class="headline-lg prose">Six questions, et nous vous rappelons.</h2>
-      <p class="body-lg prose" style="margin-top:var(--s-lg);margin-bottom:var(--s-xl)">Le budget
+      <span data-i18n="ct.eyebrow" class="eyebrow label-caps">Demander un audit</span>
+      <h2 data-i18n="ct.h2" class="headline-lg prose">Six questions, et nous vous rappelons.</h2>
+      <p data-i18n="ct.p" class="body-lg prose" style="margin-top:var(--s-lg);margin-bottom:var(--s-xl)">Le budget
         indicatif n'engage à rien. Il sert à savoir si on vous propose un chantier de trois semaines
         ou de six mois.</p>
       <!-- action et method : le point de collecte vit ICI, et nulle part ailleurs.
@@ -590,18 +650,18 @@ footer .brand:hover{color:var(--ink)}
            envoie en arriere-plan sans quitter la page. Retirer l-attribut
            action repasse le formulaire en prototype qui n-envoie rien. -->
       <form id="qualif" action="https://formspree.io/f/mbglodee" method="POST" novalidate>
-        <div class="field"><label class="label-caps" for="f-nom">Nom</label>
+        <div class="field"><label data-i18n="f.nom" class="label-caps" for="f-nom">Nom</label>
           <input id="f-nom" name="nom" autocomplete="name"></div>
-        <div class="field"><label class="label-caps" for="f-soc">Société</label>
+        <div class="field"><label data-i18n="f.soc" class="label-caps" for="f-soc">Société</label>
           <input id="f-soc" name="societe" autocomplete="organization"></div>
-        <div class="field"><label class="label-caps" for="f-sec">Secteur</label>
-          <input id="f-sec" name="secteur" placeholder="Transport, distribution, services financiers…"></div>
-        <div class="field"><label class="label-caps" for="f-bes">Besoin</label>
-          <textarea id="f-bes" name="besoin" placeholder="Le process que vous refaites tous les jours."></textarea></div>
-        <div class="field"><label class="label-caps" for="f-bud">Budget indicatif</label>
-          <input id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
-        <div class="field"><label class="label-caps" for="f-ctc">Contact</label>
-          <input id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
+        <div class="field"><label data-i18n="f.sec" class="label-caps" for="f-sec">Secteur</label>
+          <input data-i18n-ph="f.sec.ph" id="f-sec" name="secteur" placeholder="Transport, distribution, services financiers…"></div>
+        <div class="field"><label data-i18n="f.bes" class="label-caps" for="f-bes">Besoin</label>
+          <textarea data-i18n-ph="f.bes.ph" id="f-bes" name="besoin" placeholder="Le process que vous refaites tous les jours."></textarea></div>
+        <div class="field"><label data-i18n="f.bud" class="label-caps" for="f-bud">Budget indicatif</label>
+          <input data-i18n-ph="f.bud.ph" id="f-bud" name="budget" placeholder="Une plage suffit — 10–20 k€, 50 k€+…"></div>
+        <div class="field"><label data-i18n="f.ctc" class="label-caps" for="f-ctc">Contact</label>
+          <input data-i18n-ph="f.ctc.ph" id="f-ctc" name="contact" autocomplete="email" placeholder="Email ou téléphone"></div>
         <!-- Pot de miel. Un robot remplit tous les champs qu-il trouve ; un humain
              ne voit pas celui-ci. display:none et non la classe .vh : un champ
              masque visuellement reste atteignable au lecteur d-ecran, et un
@@ -612,7 +672,7 @@ footer .brand:hover{color:var(--ink)}
           <label>Ne pas remplir <input name="_gotcha" tabindex="-1" autocomplete="off"></label>
         </div>
         <input type="hidden" name="_subject" value="Demande d'audit — Automatiza">
-        <button class="btn btn-p label-action" type="submit">Envoyer la demande</button>
+        <button data-i18n="f.envoyer" class="btn btn-p label-action" type="submit">Envoyer la demande</button>
         <p class="body-sm" id="formNote" role="status" aria-live="polite"
            style="margin-top:var(--s-md);color:var(--maigre)">
           </p>
@@ -629,68 +689,68 @@ footer .brand:hover{color:var(--ink)}
        hesite les trouve juste en dessous, et le CTA fixe le ramene. -->
   <section id="faq">
     <div class="wrap">
-      <span class="eyebrow label-caps">Questions</span>
-      <h2 class="headline-lg prose">Ce qu'on nous demande avant de signer.</h2>
+      <span data-i18n="faq.eyebrow" class="eyebrow label-caps">Questions</span>
+      <h2 data-i18n="faq.h2" class="headline-lg prose">Ce qu'on nous demande avant de signer.</h2>
       <div class="sheet" style="margin-top:var(--s-xl)">
         <dl class="faq">
           <div>
-            <dt class="headline-md prose">Combien ça coûte ?</dt>
-            <dd class="body-md prose">On ne le sait pas avant l'audit, et personne ne devrait vous
+            <dt data-i18n="q1.q" class="headline-md prose">Combien ça coûte ?</dt>
+            <dd data-i18n="q1.a" class="body-md prose">On ne le sait pas avant l'audit, et personne ne devrait vous
               l'annoncer avant. L'audit dure un à trois jours et produit un chiffrage écrit ; à partir
               de là, le prix ne bouge plus sans avenant. Le forfait mensuel de suivi est une ligne
               séparée, annoncée en même temps.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Et si l'audit conclut qu'il n'y a rien à automatiser ?</dt>
-            <dd class="body-md prose">Alors on vous le dit. Un process qui change tous les mois, qui
+            <dt data-i18n="q2.q" class="headline-md prose">Et si l'audit conclut qu'il n'y a rien à automatiser ?</dt>
+            <dd data-i18n="q2.a" class="body-md prose">Alors on vous le dit. Un process qui change tous les mois, qui
               n'est décrit nulle part ou qui ne tourne que dix fois par an ne rentabilise pas une
               automatisation. Vous repartez avec le cahier des charges — il vous sert de toute façon —
               et rien ne vous engage à la suite.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Combien de temps avant que ça tourne ?</dt>
-            <dd class="body-md prose">Vous voyez tourner une première version bien avant la
+            <dt data-i18n="q3.q" class="headline-md prose">Combien de temps avant que ça tourne ?</dt>
+            <dd data-i18n="q3.a" class="body-md prose">Vous voyez tourner une première version bien avant la
               livraison : c'est le point de l'étape 03. Un périmètre de trois semaines livre en trois
               semaines. Un chantier de six mois livre par morceaux, process par process, pas en une
               seule fois à la fin.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Faut-il changer nos outils ?</dt>
-            <dd class="body-md prose">Non. On se branche sur ce que vous avez : votre ERP, votre boîte
+            <dt data-i18n="q4.q" class="headline-md prose">Faut-il changer nos outils ?</dt>
+            <dd data-i18n="q4.a" class="body-md prose">Non. On se branche sur ce que vous avez : votre ERP, votre boîte
               partagée, vos tableurs, votre CRM. Si un outil doit changer malgré tout, c'est écrit dans le cahier
               des charges avec la raison et le coût, et la décision reste la vôtre.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Où vont nos données ?</dt>
-            <dd class="body-md prose">Le périmètre des données sort de l'audit et figure au cahier des
+            <dt data-i18n="q5.q" class="headline-md prose">Où vont nos données ?</dt>
+            <dd data-i18n="q5.a" class="body-md prose">Le périmètre des données sort de l'audit et figure au cahier des
               charges : ce qui quitte vos systèmes, vers quel fournisseur, pour combien de temps.
               Quand un process ne peut rien laisser sortir, on le dit avant de le chiffrer plutôt
               qu'après.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">À qui appartient ce qui est développé ?</dt>
-            <dd class="body-md prose">À vous. Le code, les instructions données aux agents, les
+            <dt data-i18n="q6.q" class="headline-md prose">À qui appartient ce qui est développé ?</dt>
+            <dd data-i18n="q6.a" class="body-md prose">À vous. Le code, les instructions données aux agents, les
               intégrations et la documentation vous sont remis à l'étape 04, et la formation existe
               pour que vos équipes sachent les reprendre. Un système que personne ne sait reprendre
               est un système que vous ne possédez pas.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Pourquoi un forfait mensuel ?</dt>
-            <dd class="body-md prose">Parce qu'un agent n'est pas un logiciel figé. Les modèles
+            <dt data-i18n="q7.q" class="headline-md prose">Pourquoi un forfait mensuel ?</dt>
+            <dd data-i18n="q7.a" class="body-md prose">Parce qu'un agent n'est pas un logiciel figé. Les modèles
               changent, vos process aussi, et une intégration qui tenait en janvier casse en juin. Le
               forfait couvre la supervision, les correctifs, une évolution mineure par mois et un
               point de mesure. Il s'arrête quand vous le décidez.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Est-ce que ça remplace des postes ?</dt>
-            <dd class="body-md prose">Ce n'est pas ce qu'on vend. Les process qu'on automatise sont
+            <dt data-i18n="q8.q" class="headline-md prose">Est-ce que ça remplace des postes ?</dt>
+            <dd data-i18n="q8.a" class="body-md prose">Ce n'est pas ce qu'on vend. Les process qu'on automatise sont
               ceux que personne ne revendique : la ressaisie, le tri, le rapprochement. Si votre
               objectif est de supprimer des postes, dites-le dès l'audit — ni le périmètre ni le
               chiffrage ne sont les mêmes.</dd>
           </div>
           <div>
-            <dt class="headline-md prose">Travaillez-vous en dehors de Dubaï ?</dt>
-            <dd class="body-md prose">Oui. L'audit se fait sur site quand c'est possible et à distance
+            <dt data-i18n="q9.q" class="headline-md prose">Travaillez-vous en dehors de Dubaï ?</dt>
+            <dd data-i18n="q9.a" class="body-md prose">Oui. L'audit se fait sur site quand c'est possible et à distance
               sinon ; le suivi mensuel est à distance par défaut. Quand un déplacement est nécessaire,
               il apparaît comme une ligne du devis, pas comme une surprise.</dd>
           </div>
@@ -706,25 +766,67 @@ footer .brand:hover{color:var(--ink)}
 
 <footer>
   <div class="wrap">
-    <a class="brand" id="brandFoot" href="#main" aria-label="Automatiza, retour en haut"></a>
+    <a data-i18n-aria="foot.brand" class="brand" id="brandFoot" href="#main" aria-label="Automatiza, retour en haut"></a>
     <div class="foot-row">
-      <p class="body-sm" style="margin:0">Automatiza — automatisation de processus par l'IA. Dubaï.
+      <p data-i18n="foot.txt" class="body-sm" style="margin:0">Automatiza — automatisation de processus par l'IA. Dubaï.
         Édité par <strong>FTL Company</strong>.</p>
-      <nav class="foot-nav body-sm" aria-label="Informations légales">
-        <a href="mentions-legales.html">Mentions légales</a>
-        <a href="confidentialite.html">Confidentialité</a>
+      <nav data-i18n-aria="foot.nav" class="foot-nav body-sm" aria-label="Informations légales">
+        <a data-i18n="foot.mentions" href="mentions-legales.html">Mentions légales</a>
+        <a data-i18n="foot.confid" href="confidentialite.html">Confidentialité</a>
       </nav>
     </div>
+    <nav class="langues label-caps" data-i18n-aria="langues" aria-label="Langue">
+      <a href="?lang=fr" hreflang="fr" lang="fr">FR</a>
+      <a href="?lang=en" hreflang="en" lang="en">EN</a>
+      <a href="?lang=ar" hreflang="ar" lang="ar">عربي</a>
+    </nav>
   </div>
 </footer>
 
-<a class="cta label-action" href="#contact">Demander un audit</a>
+<a data-i18n="cta" class="cta label-action" href="#contact">Demander un audit</a>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="i18n.js"></script>
 <script>
 (function(){
 "use strict";
+
+/* ============================================================
+   LANGUE — decidee dans <head> (voir la note la-bas), appliquee ici.
+   Le francais est le texte du HTML ; les autres langues viennent de
+   i18n.js. Si ce fichier ne charge pas, la page reste en francais, en
+   entier et lisible — jamais a moitie traduite.
+   ============================================================ */
+var I18N = window.AZ_I18N || { page:{}, paliers:{}, msg:{} };
+var LANG = document.documentElement.lang;
+if (LANG !== "fr" && !I18N.page[LANG]) {
+  LANG = "fr";
+  document.documentElement.lang = "fr"; document.documentElement.dir = "ltr";
+}
+var TXT = I18N.page[LANG] || {};
+var MSG = (I18N.msg && (I18N.msg[LANG] || I18N.msg.fr)) || {};
+(function appliquerLangue(){
+  var i, el, k;
+  var tx = document.querySelectorAll("[data-i18n]");
+  for (i=0;i<tx.length;i++){ k=tx[i].getAttribute("data-i18n"); if (TXT[k]) tx[i].innerHTML=TXT[k]; }
+  var ph = document.querySelectorAll("[data-i18n-ph]");
+  for (i=0;i<ph.length;i++){ k=ph[i].getAttribute("data-i18n-ph"); if (TXT[k]) ph[i].setAttribute("placeholder",TXT[k]); }
+  var ar = document.querySelectorAll("[data-i18n-aria]");
+  for (i=0;i<ar.length;i++){ k=ar[i].getAttribute("data-i18n-aria"); if (TXT[k]) ar[i].setAttribute("aria-label",TXT[k]); }
+  if (TXT["meta.title"]) document.title = TXT["meta.title"];
+  el = document.querySelector('meta[name="description"]');
+  if (el && TXT["meta.desc"]) el.setAttribute("content", TXT["meta.desc"]);
+  /* la langue courante est marquee dans les deux selecteurs */
+  var liens = document.querySelectorAll(".langues a");
+  for (i=0;i<liens.length;i++)
+    if (liens[i].getAttribute("hreflang")===LANG) liens[i].setAttribute("aria-current","true");
+  /* L'objet de l'email recu porte la langue du prospect : on sait avant
+     d'ouvrir le message dans quelle langue le rappeler. */
+  el = document.querySelector('#qualif input[name="_subject"]');
+  if (el && LANG!=="fr") el.value += " (" + LANG.toUpperCase() + ")";
+  document.documentElement.classList.remove("i18n-attente");
+})();
 
 /* ============================================================
    LES CINQ PALIERS — un par service. Le robot et le lavis changent de cote a
@@ -759,6 +861,14 @@ var PALIERS = [
     recto:{x:63,y:64,w:313,rot:6}, blob:{x:2,y:39,w:40}, pilote:-3,
     affiche:{recto:32, blob:40} }
 ];
+/* Mot, accroche et fiche dans la langue de la page ; le reste ne bouge pas. */
+(function(){
+  var tr = I18N.paliers && I18N.paliers[LANG];
+  if (!tr) return;
+  for (var i=0;i<PALIERS.length && i<tr.length;i++){
+    PALIERS[i].mot = tr[i].mot; PALIERS[i].accroche = tr[i].accroche; PALIERS[i].fiche = tr[i].fiche;
+  }
+})();
 /* Nombre de transitions entre paliers : tout le heros se regle dessus. */
 var SEG = PALIERS.length - 1;
 
@@ -1473,13 +1583,14 @@ for(var fi=0;fi<ff.length;fi++) ff[fi].setAttribute("fill","#F4F0E7");
    pattern unique ne conviennent, et le controle se fait en deux essais. */
 var RE_MAIL=/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 var RE_TEL=/^\+?[\d][\d\s().–-]{7,}$/;
+/* Les textes viennent de MSG (i18n.js), dans la langue de la page. */
 var CHAMPS=[
-  { id:"f-nom", vide:"Indiquez un nom — c'est celui qu'on demandera en vous rappelant." },
-  { id:"f-bes", vide:"Décrivez le process en une phrase. Sans lui, l'audit n'a pas de point de départ." },
-  { id:"f-bud", vide:"Indiquez une plage, même approximative — c'est ce qui permet de chiffrer." },
-  { id:"f-ctc", vide:"Indiquez un email ou un numéro — sans quoi on ne peut pas vous rappeler.",
+  { id:"f-nom", vide:MSG.nom },
+  { id:"f-bes", vide:MSG.bes },
+  { id:"f-bud", vide:MSG.bud },
+  { id:"f-ctc", vide:MSG.ctc,
     test:function(v){ return RE_MAIL.test(v)||RE_TEL.test(v); },
-    format:"Ce contact n'est ni un email ni un numéro de téléphone. Vérifiez la saisie." }
+    format:MSG.format }
 ];
 /* ------------------------------------------------------------
    POINT DE COLLECTE — il se regle sur l'attribut action de <form id="qualif">,
@@ -1517,11 +1628,15 @@ var bouton=form.querySelector('button[type="submit"]');
 /* Le prefixe « Prototype — » n'a de sens que tant que rien ne part. Le garder
    sur un formulaire branche ferait douter le visiteur que sa demande est
    arrivee — c'est-a-dire l'inverse de ce que dit la note. */
-function pre(t){ return ENVOI ? t : "Prototype — "+t; }
+function pre(t){ return ENVOI ? t : MSG.proto+t; }
 /* Le texte d-accueil de la note est ecrit ici et non dans le HTML : ENVOI
    reste ainsi le seul interrupteur, et la source ne pretend plus que le
    formulaire « n'envoie rien » une fois qu-il envoie. */
-note.textContent = ENVOI ? "" : "Prototype — le formulaire n'envoie rien.";
+note.textContent = ENVOI ? "" : MSG.protoNote;
+/* Vrai tant que la note annonce des champs a corriger. C'etait un test sur le
+   mot « corriger » dans le texte de la note — qui cesse de marcher des que
+   la note n'est plus en francais. */
+var noteErreur=false;
 
 function poseErreur(champ){
   var el=document.getElementById(champ.id), w=el.parentNode;
@@ -1562,14 +1677,13 @@ form.addEventListener("submit", function(e){
     /* Le compte va dans la note vocalisee : un lecteur d-ecran pose sur le
        premier champ n-entend sinon qu-une erreur sur quatre. */
     var n=form.querySelectorAll(".field.err").length;
-    note.textContent = n>1
-      ? pre(n+" champs sont à corriger avant l'envoi.")
-      : pre("un champ est à corriger avant l'envoi.");
+    note.textContent = n>1 ? pre(MSG.errPlusieurs.replace("{n}",n)) : pre(MSG.errUn);
+    noteErreur=true;
     premier.focus();
     return;
   }
   if(!ENVOI){
-    note.textContent="Prototype — rien n'a été envoyé, mais le formulaire est valide.";
+    note.textContent=MSG.protoValide; noteErreur=false;
     return;
   }
   envoyer();
@@ -1593,7 +1707,7 @@ function envoyer(){
   enCours=true;
   bouton.disabled=true;
   form.setAttribute("aria-busy","true");
-  note.textContent="Envoi en cours…";
+  note.textContent=MSG.envoi; noteErreur=false;
 
   /* Sans limite, une requete qui ne revient jamais laisse le bouton gele pour
      toujours, sans un mot : l'etat le plus deroutant possible. */
@@ -1614,12 +1728,11 @@ function envoyer(){
     .then(function(){
       fin();
       form.reset();
-      note.textContent="Demande reçue. Nous vous rappelons.";
+      note.textContent=MSG.recu;
     })
     .catch(function(){
       fin();
-      note.textContent="L'envoi n'a pas abouti. Vos réponses sont toujours là — "+
-                       "réessayez dans un instant.";
+      note.textContent=MSG.echec;
     });
 }
 
@@ -1634,8 +1747,10 @@ for(var ci=0;ci<CHAMPS.length;ci++){
          annoncait encore « un champ est a corriger » devant un formulaire
          entierement valide. Le test du texte courant garde l-annonce unique —
          sans lui, chaque sortie de champ la revocaliserait. */
-      if(!form.querySelector(".field.err") && note.textContent.indexOf("corriger")>-1)
-        note.textContent = ENVOI ? "" : "Prototype — le formulaire n'envoie rien.";
+      if(!form.querySelector(".field.err") && noteErreur){
+        note.textContent = ENVOI ? "" : MSG.protoNote;
+        noteErreur=false;
+      }
     });
   })(CHAMPS[ci]);
 }
